@@ -6,17 +6,24 @@ namespace proyecto_inmobiliaria2_mvc_guardia_lucero.Controllers;
 
 public class PropietarioController : Controller
 {
-    public IActionResult Index()
-{
-    var lista = new List<Propietario>
+    private readonly ILogger<PropietarioController> _logger;
+    private RepositorioPropietario repo;
+    public PropietarioController(ILogger<PropietarioController> logger)
     {
-        new Propietario { Id_propietarios = 1,Apellido="jose", Nombre = "Juan", Telefono = "26654645665",Email = "juan@juan",Dni="2317822",Estado=true},
+        _logger = logger;
+        repo = new RepositorioPropietario();
         
-    };
-
-
-    return View(lista);
     }
+public IActionResult Index(int pagina = 1, int tamanoPagina = 5)
+{
+    var listaPropietarios = repo.ObtenerPaginados(pagina, tamanoPagina);
+
+    int totalRegistros = repo.ContarPropietarios(); 
+    ViewBag.PaginaActual = pagina;
+    ViewBag.TotalPaginas = (int)Math.Ceiling((double)totalRegistros / tamanoPagina);
+
+    return View(listaPropietarios); 
+}
 
     public IActionResult Detalle(int id)
     {

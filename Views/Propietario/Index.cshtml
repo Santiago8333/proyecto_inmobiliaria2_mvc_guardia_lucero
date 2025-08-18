@@ -16,6 +16,7 @@
     <th scope="col">Nombre</th>
     <th scope="col">Apellido</th>
     <th scope="col">Telefono</th>
+    <th scope="col">Accion</th>
     </tr>
 </thead>
 <tbody>
@@ -31,6 +32,25 @@
             <td>@p.Nombre</td>
             <td>@p.Apellido</td>
             <td>@p.Telefono</td>
+            <td>
+    <div class="dropdown position-static">
+        <button class="btn btn-sm btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-three-dots-vertical"></i> <!-- Icono de 3 puntos -->
+        </button>
+        <ul class="dropdown-menu">
+            <li>
+                <a class="dropdown-item" href="@Url.Action("Editar", "Propietarios", new { id = p.Id_propietario })">
+                    <i class="bi bi-pencil"></i> Modificar
+                </a>
+            </li>
+            <li>
+                <a class="dropdown-item text-danger" href="@Url.Action("Eliminar", "Propietarios", new { id = p.Id_propietario })">
+                    <i class="bi bi-trash"></i> Eliminar
+                </a>
+            </li>
+        </ul>
+    </div>
+</td>
         </tr>
         i++;
     }
@@ -48,13 +68,32 @@ else
 </div>
 </div>
 </div>
+<!-- PAGINACIÓN -->
 <nav aria-label="Page navigation">
     <ul class="pagination justify-content-center">
-        <li class="page-item" id="prevPageContainer">
-            <a class="page-link" href="#" id="prevPage">Anterior</a>
+        <!-- Botón Anterior -->
+        <li class="page-item @(ViewBag.PaginaActual == 1 ? "disabled" : "")">
+            <a class="page-link" 
+               href="@Url.Action("Index", new { pagina = ViewBag.PaginaActual - 1 })" 
+               tabindex="-1">
+                Anterior
+            </a>
         </li>
-        <li class="page-item" id="nextPageContainer">
-            <a class="page-link" href="#" id="nextPage">Siguiente</a>
+
+        <!-- Números de página -->
+        @for (int i = 1; i <= ViewBag.TotalPaginas; i++)
+        {
+            <li class="page-item @(i == ViewBag.PaginaActual ? "active" : "")">
+                <a class="page-link" href="@Url.Action("Index", new { pagina = i })">@i</a>
+            </li>
+        }
+
+        <!-- Botón Siguiente -->
+        <li class="page-item @(ViewBag.PaginaActual == ViewBag.TotalPaginas ? "disabled" : "")">
+            <a class="page-link" 
+               href="@Url.Action("Index", new { pagina = ViewBag.PaginaActual + 1 })">
+                Siguiente
+            </a>
         </li>
     </ul>
 </nav>
