@@ -13,8 +13,6 @@ public class Propietario
 
     public string Telefono {get;set;} = "";
 
-    public DateTime Fecha_creacion { get; set; } = DateTime.Today;
-
-    public bool Estado { get; set; } = false;
+    public DateTime Fecha_creacion { get; set; }
 
 }

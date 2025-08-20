@@ -1,6 +1,6 @@
 @model List<Propietario>
 @{
-    ViewData["Title"] = "Propiedades";
+    ViewData["Title"] = "Propietarios";
 }
 <div class="container mt-5" style="padding-top: 10px;">
 <div class="row">
@@ -16,6 +16,7 @@
     <th scope="col">Nombre</th>
     <th scope="col">Apellido</th>
     <th scope="col">Telefono</th>
+    <th scope="col">Fecha de Creacion</th>
     <th scope="col">Accion</th>
     </tr>
 </thead>
@@ -27,11 +28,12 @@
     {
         <tr>
             <td>@i</td>
-            <td>@p.Dni</td>
-            <td>@p.Email</td>
-            <td>@p.Nombre</td>
-            <td>@p.Apellido</td>
-            <td>@p.Telefono</td>
+            <td>@Html.DisplayFor(modelp => p.Dni)</td>
+            <td>@Html.DisplayFor(modelp => p.Email)</td>
+            <td>@Html.DisplayFor(modelp => p.Nombre)</td>
+            <td>@Html.DisplayFor(modelp => p.Apellido)</td>
+            <td>@Html.DisplayFor(modelp => p.Telefono)</td>
+            <td>@p.Fecha_creacion.ToString("dd/MM/yyyy")</td>
             <td>
     <div class="dropdown position-static">
         <button class="btn btn-sm btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -39,7 +41,7 @@
         </button>
         <ul class="dropdown-menu">
             <li>
-                <a class="dropdown-item" href="@Url.Action("Editar", "Propietarios", new { id = p.Id_propietario })">
+                <a class="dropdown-item" asp-action="Edicion" asp-route-id="@p.Id_propietario" title="Editar">
                     <i class="bi bi-pencil"></i> Modificar
                 </a>
             </li>
@@ -98,34 +100,34 @@ else
     </ul>
 </nav>
 <!-- Modal -->
-<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal fade" id="agregarModal" tabindex="-1" aria-labelledby="agregarModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h1 class="modal-title fs-5" id="exampleModalLabel">Agregar Propietarios</h1>
+        <h1 class="modal-title fs-5" id="agregarModalLabel">Agregar Propietario</h1>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <form asp-action="Agregar" method="post" id="formAgregarPropietario">
             <div class="mb-3">
-            <label for="exampleInputDni" class="form-label">Dni</label>
-            <input type="text" class="form-control" id="exampleInputDni" name="Dni">
+            <label for="InputDni" class="form-label">Dni</label>
+            <input type="text" class="form-control" id="InputDni" name="Dni">
         </div>
         <div class="mb-3">
-            <label for="exampleInputApellido" class="form-label">Apellido</label>
-            <input type="text" class="form-control" id="exampleInputApellido"  name="Apellido">
+            <label for="InputApellido" class="form-label">Apellido</label>
+            <input type="text" class="form-control" id="InputApellido"  name="Apellido">
         </div>
         <div class="mb-3">
-            <label for="exampleInputNombre" class="form-label">Nombre</label>
-            <input type="text" class="form-control" id="exampleInputNombre"  name="Nombre">
+            <label for="InputNombre" class="form-label">Nombre</label>
+            <input type="text" class="form-control" id="InputNombre"  name="Nombre">
         </div>
         <div class="mb-3">
-            <label for="exampleInputEmail1" class="form-label">Email</label>
-            <input type="email" class="form-control" id="exampleInputEmail1" name="Email">
+            <label for="InputEmail1" class="form-label">Email</label>
+            <input type="email" class="form-control" id="InputEmail1" name="Email">
         </div>
         <div class="mb-3">
-            <label for="exampleInputTelefono" class="form-label">Telefono</label>
-            <input type="text" class="form-control" id="exampleInputTelefono"  name="Telefono">
+            <label for="InputTelefono" class="form-label">Telefono</label>
+            <input type="text" class="form-control" id="InputTelefono"  name="Telefono">
         </div>
         <button type="submit" class="btn btn-primary" >Agregar</button>
 
@@ -137,3 +139,31 @@ else
     </div>
   </div>
 </div>
+
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+  <div id="successToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="toast-header">
+      <strong class="me-auto">Sistema</strong>
+      <small class="text-muted">justo ahora</small>
+      <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+    </div>
+    <div class="toast-body">
+      @TempData["Mensaje"]
+    </div>
+  </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        var toastElement = document.getElementById("successToast");
+        var toast = new bootstrap.Toast(toastElement);
+        
+        @if (TempData["Mensaje"] != null)
+        {
+            <text>
+                toast.show();
+            </text>
+        }
+   
+});
+</script>
