@@ -1,8 +1,8 @@
 namespace proyecto_inmobiliaria2_mvc_guardia_lucero.Models;
 
-public class Propietario
+public class Inquilinos
 {
-    public int Id_propietario {get;set;}
+    public int Id_Inquilino {get;set;}
     public string Dni {get;set;} = "";
 
     public string Apellido {get;set;} = "";

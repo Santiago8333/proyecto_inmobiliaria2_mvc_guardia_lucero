@@ -7,12 +7,12 @@ public class RepositorioPropietario
     private readonly string ConectionString = "Server=localhost;User=root;Password=;Database=proyecto_inmobiliaria_guardia_lucero;SslMode=none";
 
 
-    public List<Propietario> ObtenerTodos()
+    public List<Propietarios> ObtenerTodos()
     {
-        List<Propietario> propietarios = new List<Propietario>();
+        List<Propietarios> propietarios = new List<Propietarios>();
         using (MySqlConnection connection = new MySqlConnection(ConectionString))
         {
-            var query = $@"SELECT {nameof(Propietario.Id_propietario)}, {nameof(Propietario.Dni)}, {nameof(Propietario.Apellido)}, {nameof(Propietario.Nombre)}, {nameof(Propietario.Email)}, {nameof(Propietario.Telefono)}, {nameof(Propietario.Fecha_creacion)})
+            var query = $@"SELECT {nameof(Propietarios.Id_propietario)}, {nameof(Propietarios.Dni)}, {nameof(Propietarios.Apellido)}, {nameof(Propietarios.Nombre)}, {nameof(Propietarios.Email)}, {nameof(Propietarios.Telefono)}, {nameof(Propietarios.Fecha_creacion)})
                       FROM propietarios WHERE 1";
             using (MySqlCommand command = new MySqlCommand(query, connection))
             {
@@ -20,15 +20,15 @@ public class RepositorioPropietario
                 var reader = command.ExecuteReader();
                 while (reader.Read())
                 {
-                    propietarios.Add(new Propietario
+                    propietarios.Add(new Propietarios
                     {
-                        Id_propietario = reader.GetInt32(nameof(Propietario.Id_propietario)),
-                        Dni = reader.GetString(nameof(Propietario.Dni)),
-                        Apellido = reader.GetString(nameof(Propietario.Apellido)),
-                        Nombre = reader.GetString(nameof(Propietario.Nombre)),
-                        Email = reader.GetString(nameof(Propietario.Email)),
-                        Telefono = reader.GetString(nameof(Propietario.Telefono)),
-                        Fecha_creacion = reader.GetDateTime(nameof(Propietario.Fecha_creacion))
+                        Id_propietario = reader.GetInt32(nameof(Propietarios.Id_propietario)),
+                        Dni = reader.GetString(nameof(Propietarios.Dni)),
+                        Apellido = reader.GetString(nameof(Propietarios.Apellido)),
+                        Nombre = reader.GetString(nameof(Propietarios.Nombre)),
+                        Email = reader.GetString(nameof(Propietarios.Email)),
+                        Telefono = reader.GetString(nameof(Propietarios.Telefono)),
+                        Fecha_creacion = reader.GetDateTime(nameof(Propietarios.Fecha_creacion))
                         
                     });
                 }
@@ -37,12 +37,12 @@ public class RepositorioPropietario
             return propietarios;
         }
     }
-    public void AgregarPropietario(Propietario nuevoPropietario)
+    public void AgregarPropietario(Propietarios nuevoPropietario)
     {
 
         using (MySqlConnection connection = new MySqlConnection(ConectionString))
         {
-            var query = $@"INSERT INTO propietarios ({nameof(Propietario.Dni)}, {nameof(Propietario.Apellido)}, {nameof(Propietario.Nombre)}, {nameof(Propietario.Email)}, {nameof(Propietario.Telefono)})
+            var query = $@"INSERT INTO propietarios ({nameof(Propietarios.Dni)}, {nameof(Propietarios.Apellido)}, {nameof(Propietarios.Nombre)}, {nameof(Propietarios.Email)}, {nameof(Propietarios.Telefono)})
                     VALUES (@Dni, @Apellido, @Nombre,@Email,@Telefono)";
 
             using (MySqlCommand command = new MySqlCommand(query, connection))
@@ -62,9 +62,9 @@ public class RepositorioPropietario
         }
     }
 
-    public List<Propietario> ObtenerPaginados(int pagina, int tamanoPagina)
+    public List<Propietarios> ObtenerPaginados(int pagina, int tamanoPagina)
     {
-        List<Propietario> propietarios = new List<Propietario>();
+        List<Propietarios> propietarios = new List<Propietarios>();
         using (MySqlConnection connection = new MySqlConnection(ConectionString))
         {
             var query = @"SELECT Id_propietario, Dni, Apellido, Nombre, Email, Telefono, Fecha_creacion
@@ -81,15 +81,15 @@ public class RepositorioPropietario
                 var reader = command.ExecuteReader();
                 while (reader.Read())
                 {
-                    propietarios.Add(new Propietario
+                    propietarios.Add(new Propietarios
                     {
-                        Id_propietario = reader.GetInt32(nameof(Propietario.Id_propietario)),
-                        Dni = reader.GetString(nameof(Propietario.Dni)),
-                        Apellido = reader.GetString(nameof(Propietario.Apellido)),
-                        Nombre = reader.GetString(nameof(Propietario.Nombre)),
-                        Email = reader.GetString(nameof(Propietario.Email)),
-                        Telefono = reader.GetString(nameof(Propietario.Telefono)),
-                        Fecha_creacion = reader.GetDateTime(nameof(Propietario.Fecha_creacion)),
+                        Id_propietario = reader.GetInt32(nameof(Propietarios.Id_propietario)),
+                        Dni = reader.GetString(nameof(Propietarios.Dni)),
+                        Apellido = reader.GetString(nameof(Propietarios.Apellido)),
+                        Nombre = reader.GetString(nameof(Propietarios.Nombre)),
+                        Email = reader.GetString(nameof(Propietarios.Email)),
+                        Telefono = reader.GetString(nameof(Propietarios.Telefono)),
+                        Fecha_creacion = reader.GetDateTime(nameof(Propietarios.Fecha_creacion)),
                     });
                 }
             }
@@ -108,9 +108,9 @@ public class RepositorioPropietario
             }
         }
     }
-    public Propietario? ObtenerPorID(int id)
+    public Propietarios? ObtenerPorID(int id)
     {
-        Propietario? res = null;
+        Propietarios? res = null;
 
         using (MySqlConnection connection = new MySqlConnection(ConectionString))
         {
@@ -129,14 +129,14 @@ public class RepositorioPropietario
                 {
                     if (reader.Read())
                     {
-                        res = new Propietario
+                        res = new Propietarios
                         {
-                            Id_propietario = reader.GetInt32(nameof(Propietario.Id_propietario)),
-                            Dni = reader.GetString(nameof(Propietario.Dni)),
-                            Apellido = reader.GetString(nameof(Propietario.Apellido)),
-                            Nombre = reader.GetString(nameof(Propietario.Nombre)),
-                            Email = reader.GetString(nameof(Propietario.Email)),
-                            Telefono = reader.GetString(nameof(Propietario.Telefono))
+                            Id_propietario = reader.GetInt32(nameof(Propietarios.Id_propietario)),
+                            Dni = reader.GetString(nameof(Propietarios.Dni)),
+                            Apellido = reader.GetString(nameof(Propietarios.Apellido)),
+                            Nombre = reader.GetString(nameof(Propietarios.Nombre)),
+                            Email = reader.GetString(nameof(Propietarios.Email)),
+                            Telefono = reader.GetString(nameof(Propietarios.Telefono))
                         };
                     }
                 }
@@ -145,17 +145,17 @@ public class RepositorioPropietario
 
         return res; // Retorna el propietario o null si no se encontró
     }
-    public void ActualizarPropietario(Propietario actualizarPropietario)
+    public void ActualizarPropietario(Propietarios actualizarPropietario)
     {
         using (MySqlConnection connection = new MySqlConnection(ConectionString))
         {
             var query = $@"UPDATE propietarios 
                SET 
-                   {nameof(Propietario.Dni)} = @Dni, 
-                   {nameof(Propietario.Apellido)} = @Apellido, 
-                   {nameof(Propietario.Nombre)} = @Nombre, 
-                   {nameof(Propietario.Email)} = @Email, 
-                   {nameof(Propietario.Telefono)} = @Telefono
+                   {nameof(Propietarios.Dni)} = @Dni, 
+                   {nameof(Propietarios.Apellido)} = @Apellido, 
+                   {nameof(Propietarios.Nombre)} = @Nombre, 
+                   {nameof(Propietarios.Email)} = @Email, 
+                   {nameof(Propietarios.Telefono)} = @Telefono
                WHERE Id_propietario = @Id";
             using (MySqlCommand command = new MySqlCommand(query, connection))
             {
@@ -179,12 +179,11 @@ public void EliminarPropietario(int id)
     {
         using (MySqlConnection connection = new MySqlConnection(ConectionString))
         {
-            //var query = "DELETE FROM propietarios WHERE Id_propietarios = @Id";
-            var query = $@"DELETE propietarios
-                       WHERE Id_propietario = @Id";
+            var query = "DELETE FROM propietarios WHERE Id_propietario = @Id";
 
             using (MySqlCommand command = new MySqlCommand(query, connection))
             {
+                command.Parameters.AddWithValue("@Id", id);
                 connection.Open();
                 command.ExecuteNonQuery();
                 connection.Close();

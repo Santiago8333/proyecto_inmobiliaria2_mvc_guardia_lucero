@@ -31,7 +31,7 @@ public class PropietarioController : Controller
         return View();
     }
     [HttpPost]
-    public ActionResult Agregar(Propietario propietario)
+    public ActionResult Agregar(Propietarios propietario)
     {
         if (ModelState.IsValid)
         {
@@ -62,16 +62,31 @@ public class PropietarioController : Controller
             return View(propietario);
         }
     }
-[HttpPost]
-public IActionResult Actualizar(Propietario actualizarPropietario)
-{
-if (ModelState.IsValid)
+    [HttpPost]
+    public IActionResult Actualizar(Propietarios actualizarPropietario)
     {
-        repo.ActualizarPropietario(actualizarPropietario);
-        TempData["Mensaje"] = "Propietario Modificado correctamente.";
+        if (ModelState.IsValid)
+        {
+            repo.ActualizarPropietario(actualizarPropietario);
+            TempData["Mensaje"] = "Propietario Modificado correctamente.";
+            return RedirectToAction("Index");
+        }
+        TempData["Mensaje"] = "Hubo un error al Modificar el Propietario.";
         return RedirectToAction("Index");
     }
-TempData["Mensaje"] = "Hubo un error al Modificar el Propietario.";
-return RedirectToAction("Index");
+
+public IActionResult Eliminar(int id)
+{
+  var propietario = repo.ObtenerPorID(id);
+        if (propietario == null)
+        {
+            TempData["Mensaje"] = "Propietario no encontrado.";
+            return RedirectToAction("Index");
+        }
+        repo.EliminarPropietario(id);
+        TempData["Mensaje"] = "Propietario eliminado.";
+        return RedirectToAction("Index");
+    
 }
+
 }

@@ -1,11 +1,11 @@
-@model List<Propietarios>
+@model List<Inquilinos>
 @{
-    ViewData["Title"] = "Propietarios";
+    ViewData["Title"] = "Inquilinos";
 }
 <div class="container mt-5" style="padding-top: 10px;">
 <div class="row">
 <div class="col-md-12 history bg-light border-right">
-<h1>Propietarios</h1>
+<h1>Inquilinos</h1>
 <div class="table-responsive">
 <table class="table table-hover table-sm">
 <thead>
@@ -41,13 +41,13 @@
         </button>
         <ul class="dropdown-menu">
             <li>
-                <a class="dropdown-item" asp-action="Edicion" asp-route-id="@p.Id_propietario" title="Editar">
+                <a class="dropdown-item" asp-action="Edicion" asp-route-id="@p.Id_Inquilino" title="Editar">
                      <i class="fa-solid fa-pencil"></i> Modificar
                 </a>
             </li>
             <li>
                 <a href="javascript:void(0);" 
-                      data-id="@p.Id_propietario" 
+                      data-id="@p.Id_Inquilino" 
                       class="dropdown-item" 
                       onclick="confirmDelete(this)">
                         <i class="fa-solid fa-trash"></i> Eliminar
@@ -63,7 +63,7 @@
 else
 {
     <tr>
-        <td colspan="6" class="text-center text-muted">No hay propietarios cargados</td>
+        <td colspan="6" class="text-center text-muted">No hay inquilinos cargados</td>
     </tr>
 }
 </tbody>
@@ -107,11 +107,11 @@ else
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h1 class="modal-title fs-5" id="agregarModalLabel">Agregar Propietario</h1>
+        <h1 class="modal-title fs-5" id="agregarModalLabel">Agregar Inquilino</h1>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <form asp-action="Agregar" method="post" id="formAgregarPropietario">
+        <form asp-action="Agregar" method="post" id="formAgregarInquilino">
             <div class="mb-3">
             <label for="InputDni" class="form-label">Dni</label>
             <input type="text" class="form-control" id="InputDni" name="Dni">
@@ -164,7 +164,7 @@ else
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        ¿Estás seguro de que deseas eliminar este propietario?
+        ¿Estás seguro de que deseas eliminar este inquilino?
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
@@ -188,7 +188,7 @@ else
     });
     function confirmDelete(element) {
         var id = element.getAttribute("data-id");
-        var url = "@Url.Action("Eliminar", "Propietario")" + "/" + id;
+        var url = "@Url.Action("Eliminar", "Inquilino")" + "/" + id;
         document.getElementById("confirmDeleteButton").setAttribute("href", url);
         var myModal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
         myModal.show();
