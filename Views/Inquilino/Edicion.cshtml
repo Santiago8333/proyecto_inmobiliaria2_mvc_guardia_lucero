@@ -1,10 +1,10 @@
-@model proyecto_inmobiliaria2_mvc_guardia_lucero.Models.Propietarios
+@model proyecto_inmobiliaria2_mvc_guardia_lucero.Models.Inquilinos
 @{
     ViewData["Title"] = "Propietarios Edicion";
 }
 
 <div class="container mt-5" style="padding-top: 10px;">
-    <h1>Editar Propietario</h1>
+    <h1>Editar Inquilinos</h1>
 
     <form asp-action="Actualizar" method="post" class="needs-validation" novalidate>
         <div class="row">
@@ -12,7 +12,7 @@
                 <label for="Dni" class="form-label">DNI</label>
                 <input type="text" class="form-control" id="Dni" name="Dni" value="@Model.Dni" required/>
                 <div class="invalid-feedback">El DNI es obligatorio.</div>
-                <input type="hidden" id="Id_propietario" name="Id_propietario" value="@Model.Id_propietario" required/>
+                <input type="hidden" id="Id_inquilino" name="Id_inquilino" value="@Model.Id_Inquilino" required/>
             </div>
 
             <div class="col-md-6">

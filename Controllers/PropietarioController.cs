@@ -21,7 +21,7 @@ public class PropietarioController : Controller
         int totalRegistros = repo.ContarPropietarios();
         ViewBag.PaginaActual = pagina;
         ViewBag.TotalPaginas = (int)Math.Ceiling((double)totalRegistros / tamanoPagina);
-
+        ViewBag.Registros = totalRegistros > 0;
         return View(listaPropietarios);
     }
 
@@ -39,7 +39,7 @@ public class PropietarioController : Controller
             repo.AgregarPropietario(propietario);
             return RedirectToAction("Index");
         }
-        TempData["Mensaje"] = "Error.";
+        TempData["Mensaje"] = "Error al agregar.";
         return View(propietario);
     }
 
