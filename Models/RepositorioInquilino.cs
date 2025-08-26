@@ -28,7 +28,7 @@ public class RepositorioInquilino
                 {
                     propietarios.Add(new Inquilinos
                     {
-                        Id_Inquilino = reader.GetInt32(nameof(Inquilinos.Id_Inquilino)),
+                        Id_inquilino = reader.GetInt32(nameof(Inquilinos.Id_inquilino)),
                         Dni = reader.GetString(nameof(Inquilinos.Dni)),
                         Apellido = reader.GetString(nameof(Inquilinos.Apellido)),
                         Nombre = reader.GetString(nameof(Inquilinos.Nombre)),
@@ -115,7 +115,7 @@ public class RepositorioInquilino
                     {
                         res = new Inquilinos
                         {
-                            Id_Inquilino = reader.GetInt32(nameof(Inquilinos.Id_Inquilino)),
+                            Id_inquilino = reader.GetInt32(nameof(Inquilinos.Id_inquilino)),
                             Dni = reader.GetString(nameof(Inquilinos.Dni)),
                             Apellido = reader.GetString(nameof(Inquilinos.Apellido)),
                             Nombre = reader.GetString(nameof(Inquilinos.Nombre)),
@@ -129,7 +129,7 @@ public class RepositorioInquilino
 
         return res; // Retorna el propietario o null si no se encontró
     }
-        public void ActualizarInquilino(Inquilinos actualizarInquilino)
+    public void ActualizarInquilino(Inquilinos actualizarInquilino)
     {
         using (MySqlConnection connection = new MySqlConnection(ConectionString))
         {
@@ -149,7 +149,7 @@ public class RepositorioInquilino
                 command.Parameters.AddWithValue("@Nombre", actualizarInquilino.Nombre);
                 command.Parameters.AddWithValue("@Email", actualizarInquilino.Email);
                 command.Parameters.AddWithValue("@Telefono", actualizarInquilino.Telefono);
-                command.Parameters.AddWithValue("@Id", actualizarInquilino.Id_Inquilino);
+                command.Parameters.AddWithValue("@Id", actualizarInquilino.Id_inquilino);
 
                 connection.Open();
                 command.ExecuteNonQuery();
@@ -158,4 +158,39 @@ public class RepositorioInquilino
         }
 
     }
+public Inquilinos? ObtenerPorEmail(string email)
+{
+    Inquilinos? res = null;
+
+    using (MySqlConnection connection = new MySqlConnection(ConectionString))
+    {
+        var query = @"SELECT Id_inquilino, Apellido, Nombre, Email, Telefono 
+                      FROM inquilinos 
+                      WHERE Email = @Email";
+
+        using (MySqlCommand command = new MySqlCommand(query, connection))
+        {
+            command.Parameters.AddWithValue("@Email", email);
+
+            connection.Open();
+
+            using (var reader = command.ExecuteReader())
+            {
+                if (reader.Read())
+                {
+                    res = new Inquilinos
+                    {
+                        Id_inquilino = reader.GetInt32(reader.GetOrdinal("Id_inquilino")),
+                        Apellido = reader.GetString(reader.GetOrdinal("Apellido")),
+                        Nombre = reader.GetString(reader.GetOrdinal("Nombre")),
+                        Email = reader.GetString(reader.GetOrdinal("Email")),
+                        Telefono = reader.GetString(reader.GetOrdinal("Telefono"))
+                    };
+                }
+            }
+        }
+    }
+
+    return res; // Retorna el propietario o null si no se encontró
+}
 }

@@ -29,7 +29,7 @@ public class RepositorioPropietario
                         Email = reader.GetString(nameof(Propietarios.Email)),
                         Telefono = reader.GetString(nameof(Propietarios.Telefono)),
                         Fecha_creacion = reader.GetDateTime(nameof(Propietarios.Fecha_creacion))
-                        
+
                     });
                 }
                 connection.Close();
@@ -53,7 +53,7 @@ public class RepositorioPropietario
                 command.Parameters.AddWithValue("@Nombre", nuevoPropietario.Nombre);
                 command.Parameters.AddWithValue("@Email", nuevoPropietario.Email);
                 command.Parameters.AddWithValue("@Telefono", nuevoPropietario.Telefono);
-                
+
 
                 connection.Open();
                 command.ExecuteNonQuery(); // Ejecuta la consulta de inserción
@@ -174,8 +174,8 @@ public class RepositorioPropietario
         }
 
     }
-    
-public void EliminarPropietario(int id)
+
+    public void EliminarPropietario(int id)
     {
         using (MySqlConnection connection = new MySqlConnection(ConectionString))
         {
@@ -190,4 +190,39 @@ public void EliminarPropietario(int id)
             }
         }
     }
+    public Propietarios? ObtenerPorEmail(string email)
+{
+    Propietarios? res = null;
+
+    using (MySqlConnection connection = new MySqlConnection(ConectionString))
+    {
+        var query = @"SELECT Id_propietario, Apellido, Nombre, Email, Telefono 
+                      FROM propietarios 
+                      WHERE Email = @Email";
+
+        using (MySqlCommand command = new MySqlCommand(query, connection))
+        {
+            command.Parameters.AddWithValue("@Email", email);
+
+            connection.Open();
+
+            using (var reader = command.ExecuteReader())
+            {
+                if (reader.Read())
+                {
+                    res = new Propietarios
+                    {
+                        Id_propietario = reader.GetInt32(reader.GetOrdinal("Id_propietario")),
+                        Apellido = reader.GetString(reader.GetOrdinal("Apellido")),
+                        Nombre = reader.GetString(reader.GetOrdinal("Nombre")),
+                        Email = reader.GetString(reader.GetOrdinal("Email")),
+                        Telefono = reader.GetString(reader.GetOrdinal("Telefono"))
+                    };
+                }
+            }
+        }
+    }
+
+    return res; // Retorna el propietario o null si no se encontró
+}
 }

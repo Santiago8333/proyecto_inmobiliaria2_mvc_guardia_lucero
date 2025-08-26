@@ -30,9 +30,18 @@ public class InquilinoController : Controller
     {
         if (ModelState.IsValid)
         {
-            TempData["Mensaje"] = "Inquilino agregado exitosamente.";
-            repo.AgregarInquilino(inquilino);
-            return RedirectToAction("Index");
+            var inquilinoExistente = repo.ObtenerPorEmail(inquilino.Email);
+            if (inquilinoExistente != null)
+            {
+                TempData["Mensaje"] = "ya hay un Inquilino Registrado con ese email.";
+                return RedirectToAction("Index");
+            }
+            else
+            {
+                TempData["Mensaje"] = "Inquilino agregado exitosamente.";
+                repo.AgregarInquilino(inquilino);
+                return RedirectToAction("Index");
+            }
         }
         TempData["Mensaje"] = "Error al agregar.";
         return View(inquilino);
