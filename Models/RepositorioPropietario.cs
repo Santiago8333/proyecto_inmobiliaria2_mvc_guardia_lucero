@@ -1,10 +1,17 @@
 using MySql.Data.MySqlClient;
 
-namespace proyecto_inmobiliaria2_mvc_guardia_lucero.Models;
 
-public class RepositorioPropietario
+namespace proyecto_inmobiliaria2_mvc_guardia_lucero.Models
 {
-    private readonly string ConectionString = "Server=localhost;User=root;Password=;Database=proyecto_inmobiliaria_guardia_lucero;SslMode=none";
+public class RepositorioPropietario : RepositorioBase
+{
+
+    //private readonly string ConectionString = "Server=localhost;User=root;Password=;Database=proyecto_inmobiliaria_guardia_lucero;SslMode=none";
+    public RepositorioPropietario(IConfiguration configuration) : base(configuration)
+    {
+
+    }
+
 
 
     public List<Propietarios> ObtenerTodos()
@@ -191,38 +198,39 @@ public class RepositorioPropietario
         }
     }
     public Propietarios? ObtenerPorEmail(string email)
-{
-    Propietarios? res = null;
-
-    using (MySqlConnection connection = new MySqlConnection(ConectionString))
     {
-        var query = @"SELECT Id_propietario, Apellido, Nombre, Email, Telefono 
+        Propietarios? res = null;
+
+        using (MySqlConnection connection = new MySqlConnection(ConectionString))
+        {
+            var query = @"SELECT Id_propietario, Apellido, Nombre, Email, Telefono 
                       FROM propietarios 
                       WHERE Email = @Email";
 
-        using (MySqlCommand command = new MySqlCommand(query, connection))
-        {
-            command.Parameters.AddWithValue("@Email", email);
-
-            connection.Open();
-
-            using (var reader = command.ExecuteReader())
+            using (MySqlCommand command = new MySqlCommand(query, connection))
             {
-                if (reader.Read())
+                command.Parameters.AddWithValue("@Email", email);
+
+                connection.Open();
+
+                using (var reader = command.ExecuteReader())
                 {
-                    res = new Propietarios
+                    if (reader.Read())
                     {
-                        Id_propietario = reader.GetInt32(reader.GetOrdinal("Id_propietario")),
-                        Apellido = reader.GetString(reader.GetOrdinal("Apellido")),
-                        Nombre = reader.GetString(reader.GetOrdinal("Nombre")),
-                        Email = reader.GetString(reader.GetOrdinal("Email")),
-                        Telefono = reader.GetString(reader.GetOrdinal("Telefono"))
-                    };
+                        res = new Propietarios
+                        {
+                            Id_propietario = reader.GetInt32(reader.GetOrdinal("Id_propietario")),
+                            Apellido = reader.GetString(reader.GetOrdinal("Apellido")),
+                            Nombre = reader.GetString(reader.GetOrdinal("Nombre")),
+                            Email = reader.GetString(reader.GetOrdinal("Email")),
+                            Telefono = reader.GetString(reader.GetOrdinal("Telefono"))
+                        };
+                    }
                 }
             }
         }
-    }
 
-    return res; // Retorna el propietario o null si no se encontró
+        return res; // Retorna el propietario o null si no se encontró
+    }
 }
 }

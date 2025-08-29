@@ -1,5 +1,8 @@
+using proyecto_inmobiliaria2_mvc_guardia_lucero.Models;
 var builder = WebApplication.CreateBuilder(args);
-
+// Registrar el repositorio como servicio
+builder.Services.AddScoped<RepositorioPropietario>();
+builder.Services.AddScoped<RepositorioInmueble>();
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
@@ -23,5 +26,7 @@ app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
+
 
 app.Run();

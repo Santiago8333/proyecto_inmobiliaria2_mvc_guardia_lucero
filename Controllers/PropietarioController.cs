@@ -6,13 +6,14 @@ namespace proyecto_inmobiliaria2_mvc_guardia_lucero.Controllers;
 
 public class PropietarioController : Controller
 {
-    private readonly ILogger<PropietarioController> _logger;
-    private RepositorioPropietario repo;
-    public PropietarioController(ILogger<PropietarioController> logger)
+    
+    private readonly RepositorioPropietario repo;
+    private readonly IConfiguration config;
+    public PropietarioController(RepositorioPropietario repositorio, IConfiguration config)
     {
-        _logger = logger;
-        repo = new RepositorioPropietario();
-
+        
+        this.repo = repositorio;
+        this.config = config;
     }
     public IActionResult Index(int pagina = 1, int tamanoPagina = 5)
     {
