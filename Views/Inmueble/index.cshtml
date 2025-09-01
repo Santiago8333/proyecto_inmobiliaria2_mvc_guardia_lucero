@@ -11,12 +11,11 @@
 <thead>
     <tr>
     <th scope="col">#</th>
+    <th scope="col">Email Propietario</th>
     <th scope="col">Uso</th>
     <th scope="col">Tipo</th>
     <th scope="col">Ambiente</th>
     <th scope="col">Precio</th>
-    <th scope="col">Longitud</th>
-    <th scope="col">Latitud</th>
     <th scope="col">Fecha de Creacion</th>
     <th scope="col">Accion</th>
     </tr>
@@ -29,12 +28,11 @@
     {
         <tr>
             <td>@i</td>
+            <td>@Html.DisplayFor(modelp => p.EmailPropietario)</td>
             <td>@Html.DisplayFor(modelp => p.Uso)</td>
             <td>@Html.DisplayFor(modelp => p.Tipo)</td>
             <td>@Html.DisplayFor(modelp => p.Ambiente)</td>
             <td>@Html.DisplayFor(modelp => p.Precio)</td>
-            <td>@Html.DisplayFor(modelp => p.Longitud)</td>
-            <td>@Html.DisplayFor(modelp => p.Latitud)</td>
             <td>@p.Fecha_creacion.ToString("dd/MM/yyyy")</td>
             <td>
     <div class="dropdown position-static">
@@ -45,6 +43,11 @@
             <li>
                 <a class="dropdown-item" asp-action="Edicion" asp-route-id="@p.Id_inmueble" title="Editar">
                      <i class="fa-solid fa-pencil"></i> Modificar
+                </a>
+            </li>
+            <li>
+                <a class="dropdown-item" asp-action="Detalle" asp-route-id="@p.Id_inmueble" title="Detalle">
+                     <i class="fa-solid fa-book"></i> Detalle
                 </a>
             </li>
             <li>
@@ -65,7 +68,7 @@
 else
 {
     <tr>
-        <td colspan="6" class="text-center text-muted">No hay inmuebles cargados</td>
+        <td colspan="8" class="text-center text-muted">No hay inmuebles cargados</td>
     </tr>
 }
 </tbody>
@@ -115,35 +118,56 @@ else
       <div class="modal-body">
 <form asp-action="Agregar" method="post" class="needs-validation" novalidate>
     <div class="mb-3">
-        <label for="InputDni" class="form-label">Dni</label>
-        <input type="text" class="form-control" id="InputDni" name="Dni" required>
-        <div class="invalid-feedback">El DNI es obligatorio.</div>
+        <label for="InputEmailPropietario" class="form-label">Email Propietario</label>
+        <select class="form-control" id="InputEmailPropietario" name="Id_propietario" required>
+            <option value="">-- Seleccione un propietario --</option>
+            @foreach (var p in ViewBag.Propietarios)
+            {
+                <option value="@p.Id_propietario">@p.Email</option>
+            }
+        </select>
+        <div class="invalid-feedback">El Email es obligatorio.</div>
+    </div>
+
+
+    <div class="mb-3">
+        <label for="exampleInputUso" class="form-label">Uso</label>
+                <select class="form-select" id="exampleInputUso" name="Uso">
+                    <option value="Residencial">Residencial</option>
+                    <option value="Comercial">Comercial</option>
+        </select>
     </div>
 
     <div class="mb-3">
-        <label for="InputApellido" class="form-label">Apellido</label>
-        <input type="text" class="form-control" id="InputApellido" name="Apellido" required>
-        <div class="invalid-feedback">El Apellido es obligatorio.</div>
+         <label for="exampleInputApellido" class="form-label">Tipo</label>
+            <select class="form-select" id="exampleInputTipo" name="Tipo">
+                    <option value="local">local</option>
+                    <option value="depósito">deposito</option>
+                    <option value="casa">casa</option>
+                    <option value="departamento">departamento</option>
+                </select>
     </div>
 
     <div class="mb-3">
-        <label for="InputNombre" class="form-label">Nombre</label>
-        <input type="text" class="form-control" id="InputNombre" name="Nombre" required>
-        <div class="invalid-feedback">El Nombre es obligatorio.</div>
+        <label for="InputAmbiente" class="form-label">Cantidad de Ambiente</label>
+        <input type="number" class="form-control" id="InputAmbiente" name="Ambiente" required>
+        <div class="invalid-feedback">El Ambiente es obligatorio.</div>
     </div>
-
     <div class="mb-3">
-        <label for="InputEmail1" class="form-label">Email</label>
-        <input type="email" class="form-control" id="InputEmail1" name="Email" required>
-        <div class="invalid-feedback">Ingrese un email válido.</div>
+        <label for="InputPrecio" class="form-label">Precio del Inmueble</label>
+        <input type="number" class="form-control" id="InputPrecio" name="Precio" required>
+        <div class="invalid-feedback">El Precio es obligatorio.</div>
     </div>
-
     <div class="mb-3">
-        <label for="InputTelefono" class="form-label">Teléfono</label>
-        <input type="text" class="form-control" id="InputTelefono" name="Telefono" required>
-        <div class="invalid-feedback">El Teléfono es obligatorio.</div>
+        <label for="InputLongitud" class="form-label">Longitud del Inmueble</label>
+        <input type="number" class="form-control" id="InputLongitud" name="Longitud" required>
+        <div class="invalid-feedback">El Longitud es obligatorio.</div>
     </div>
-
+    <div class="mb-3">
+        <label for="InputLatitud" class="form-label">Latitud del Inmueble</label>
+        <input type="number" class="form-control" id="InputLatitud" name="Latitud" required>
+        <div class="invalid-feedback">El Latitud es obligatorio.</div>
+    </div>
     <button type="submit" class="btn btn-primary">Agregar</button>
 </form>
       </div>

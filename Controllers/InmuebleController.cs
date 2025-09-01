@@ -6,7 +6,7 @@ namespace proyecto_inmobiliaria2_mvc_guardia_lucero.Controllers;
 
 public class InmuebleController : Controller
 {
-   private readonly RepositorioInmueble repo;
+    private readonly RepositorioInmueble repo;
     private readonly IConfiguration config;
     public InmuebleController(RepositorioInmueble repositorio, IConfiguration config)
     {
@@ -21,6 +21,8 @@ public class InmuebleController : Controller
         ViewBag.PaginaActual = pagina;
         ViewBag.TotalPaginas = (int)Math.Ceiling((double)totalRegistros / tamanoPagina);
         ViewBag.Registros = totalRegistros > 0;
+        ViewBag.Propietarios = repo.ObtenerTodos();
         return View(listaInquilinos);
     }
+    
 }
