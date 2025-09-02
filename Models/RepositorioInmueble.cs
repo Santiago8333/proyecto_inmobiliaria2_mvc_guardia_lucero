@@ -49,8 +49,8 @@ public class RepositorioInmueble : RepositorioBase
                         Tipo = reader.GetString(nameof(Inmuebles.Tipo)),
                         Ambiente = reader.GetInt32(nameof(Inmuebles.Ambiente)),
                         Precio = reader.GetDecimal(nameof(Inmuebles.Precio)),
-                        Longitud = reader.GetFloat(nameof(Inmuebles.Longitud)),
-                        Latitud = reader.GetFloat(nameof(Inmuebles.Latitud)),
+                        Longitud = reader.GetDouble(nameof(Inmuebles.Longitud)),
+                        Latitud = reader.GetDouble(nameof(Inmuebles.Latitud)),
                         Fecha_creacion = reader.GetDateTime(nameof(Inmuebles.Fecha_creacion)),
                         Estado = reader.GetBoolean(nameof(Inmuebles.Estado))
                     });
@@ -71,7 +71,7 @@ public class RepositorioInmueble : RepositorioBase
             }
         }
     }
-    public List<Propietarios> ObtenerTodos()
+    public List<Propietarios> ObtenerTodosPropietarios()
     {
         List<Propietarios> propietarios = new List<Propietarios>();
         using (MySqlConnection connection = new MySqlConnection(ConectionString))
@@ -125,5 +125,70 @@ public class RepositorioInmueble : RepositorioBase
                 connection.Close();
             }
         }
+    }
+    public void EliminarInmueble(int id)
+    {
+        using (MySqlConnection connection = new MySqlConnection(ConectionString))
+        {
+            var query = "DELETE FROM inmuebles WHERE Id_inmueble = @Id";
+
+            using (MySqlCommand command = new MySqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@Id", id);
+                connection.Open();
+                command.ExecuteNonQuery();
+                connection.Close();
+            }
+        }
+    }
+    public Inmuebles? ObtenerPorID(int id)
+    {
+        Inmuebles? res = null;
+
+        using (MySqlConnection connection = new MySqlConnection(ConectionString))
+        {
+            var query = $@"
+            SELECT i.{nameof(Inmuebles.Id_inmueble)},
+                   i.{nameof(Inmuebles.Id_propietario)},
+                   i.{nameof(Inmuebles.Uso)},
+                   i.{nameof(Inmuebles.Tipo)},
+                   i.{nameof(Inmuebles.Ambiente)},
+                   i.{nameof(Inmuebles.Precio)},
+                   i.{nameof(Inmuebles.Longitud)},
+                   i.{nameof(Inmuebles.Latitud)},
+                   p.Email AS EmailPropietario
+            FROM inmuebles i
+            JOIN propietarios p ON i.Id_propietario = p.Id_propietario
+            WHERE i.Id_inmueble = @Id";
+
+            using (MySqlCommand command = new MySqlCommand(query, connection))
+            {
+                // Agrega el parámetro id
+                command.Parameters.AddWithValue("@Id", id);
+
+                connection.Open();
+
+                using (var reader = command.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        res = new Inmuebles
+                        {
+                            Id_inmueble = reader.GetInt32(nameof(Inmuebles.Id_inmueble)),
+                            Id_propietario = reader.GetInt32(nameof(Inmuebles.Id_propietario)),
+                            Uso = reader.GetString(nameof(Inmuebles.Uso)),
+                            Tipo = reader.GetString(nameof(Inmuebles.Tipo)),
+                            Ambiente = reader.GetInt32(nameof(Inmuebles.Ambiente)),
+                            Precio = reader.GetDecimal(nameof(Inmuebles.Precio)),
+                            Longitud = reader.GetDouble(nameof(Inmuebles.Longitud)),
+                            Latitud = reader.GetDouble(nameof(Inmuebles.Latitud)),
+                            EmailPropietario = reader.GetString("EmailPropietario")
+                        };
+                    }
+                }
+            }
+        }
+
+        return res; // Retorna el propietario o null si no se encontró
     }
 }

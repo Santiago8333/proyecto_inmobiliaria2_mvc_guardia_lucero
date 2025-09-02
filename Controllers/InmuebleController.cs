@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.ObjectPool;
 using proyecto_inmobiliaria2_mvc_guardia_lucero.Models;
 
 namespace proyecto_inmobiliaria2_mvc_guardia_lucero.Controllers;
@@ -21,8 +22,52 @@ public class InmuebleController : Controller
         ViewBag.PaginaActual = pagina;
         ViewBag.TotalPaginas = (int)Math.Ceiling((double)totalRegistros / tamanoPagina);
         ViewBag.Registros = totalRegistros > 0;
-        ViewBag.Propietarios = repo.ObtenerTodos();
+        ViewBag.Propietarios = repo.ObtenerTodosPropietarios();
         return View(listaInquilinos);
     }
-    
+    [HttpPost]
+    public ActionResult Agregar(Inmuebles inmueble)
+    {
+        if (ModelState.IsValid)
+        {
+            TempData["Mensaje"] = "Inmuebles agregado exitosamente.";
+            repo.AgregarInmueble(inmueble);
+            return RedirectToAction("Index");
+        }
+        TempData["Mensaje"] = "Error al agregar.";
+        return RedirectToAction("Index");
+    }
+    public IActionResult Eliminar(int id)
+    {
+        var inmueble = repo.ObtenerPorID(id);
+        if (inmueble == null)
+        {
+            TempData["Mensaje"] = "Inmueble no encontrado.";
+            return RedirectToAction("Index");
+        }
+        repo.EliminarInmueble(id);
+        TempData["Mensaje"] = "Inmueble eliminado.";
+        return RedirectToAction("Index");
+
+    }
+    public IActionResult Edicion(int id)
+    {
+        if (id == 0)
+        {
+            TempData["Mensaje"] = "Inmueble no encontrado.";
+            return RedirectToAction("Index");
+        }
+        else
+        {
+            
+            var inmueble = repo.ObtenerPorID(id);
+            if (inmueble == null)
+            {
+                TempData["Mensaje"] = "Inmueble no encontrado.";
+                return RedirectToAction("Index");
+            }
+            ViewBag.Propietarios = repo.ObtenerTodosPropietarios();
+            return View(inmueble);
+        }
+    }
 }

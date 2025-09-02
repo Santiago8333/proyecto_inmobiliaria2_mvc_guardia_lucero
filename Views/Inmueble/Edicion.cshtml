@@ -1,0 +1,98 @@
+@model proyecto_inmobiliaria2_mvc_guardia_lucero.Models.Inmuebles
+@{
+    ViewData["Title"] = "Inmuebles Edicion";
+    var selectedlocal = Model.Tipo == "local";
+    var selecteddeposito = Model.Tipo == "depósito";
+    var selectedcasa = Model.Tipo == "casa";
+    var selecteddepartamento = Model.Tipo == "departamento";
+}
+<div class="container mt-5" style="padding-top: 10px;">
+    <h1>Editar Inmuebles</h1>
+
+    <form asp-action="Actualizar" method="post" class="needs-validation" novalidate>
+        <div class="row">
+            <div class="col-md-6">
+                <label for="InputEmailPropietario" class="form-label">Email Propietario</label>
+                <select class="form-control" id="InputEmailPropietario" name="Id_propietario" required>
+                    @foreach (var p in ViewBag.Propietarios)
+                    {
+                        if(Model.Id_propietario == p.Id_propietario){
+                            <option value="@p.Id_propietario" selected>@p.Email</option>
+                        }else{
+                            <option value="@p.Id_propietario">@p.Email</option>
+                        }
+                    }
+                </select>
+                <div class="invalid-feedback">El Email es obligatorio.</div>
+                <input type="hidden" id="Id_inmueble" name="Id_inmueble" value="@Model.Id_inmueble" required/>
+            </div>
+
+            <div class="col-md-6">
+                <label for="exampleInputUso" class="form-label">Uso</label>
+                <select class="form-select" id="exampleInputUso" name="Uso">
+                    @if(Model.Uso == "Residencial"){
+                        <option value="Residencial" selected>Residencial</option>
+                        <option value="Comercial" >Comercial</option>
+                    }else{
+                        <option value="Comercial" selected>Comercial</option>
+                        <option value="Residencial" >Residencial</option>
+                    }
+                </select>
+            </div>
+
+            <div class="col-md-6">
+                 <label for="exampleInputApellido" class="form-label">Tipo</label>
+                <select class="form-select" id="exampleInputTipo" name="Tipo">
+                        @if(selectedlocal){
+                    <option value="local" selected>local</option>
+                    <option value="depósito">depósito</option>
+                    <option value="casa">casa</option>
+                    <option value="departamento">departamento</option>
+                    }else if(selecteddeposito){
+                    <option value="local">local</option>
+                    <option value="depósito" selected>deposito</option>
+                    <option value="casa">casa</option>
+                    <option value="departamento">departamento</option>
+                    }else if(selectedcasa){
+                    <option value="local">local</option>
+                    <option value="depósito">deposito</option>
+                    <option value="casa" selected>casa</option>
+                    <option value="departamento">departamento</option>
+                    }else if(selecteddepartamento){
+                    <option value="local">local</option>
+                    <option value="depósito">deposito</option>
+                    <option value="casa">casa</option>
+                    <option value="departamento" selected>departamento</option>
+                    }
+                </select>
+            </div>
+
+            <div class="col-md-6">
+                <label for="InputAmbiente" class="form-label">Cantidad de Ambiente</label>
+                <input type="number" class="form-control" id="InputAmbiente" name="Ambiente" value="@Model.Ambiente" required>
+                <div class="invalid-feedback">El Ambiente es obligatorio.</div>
+            </div>
+
+            <div class="col-md-6">
+                <label for="InputPrecio" class="form-label">Precio del Inmueble</label>
+                <input type="text" class="form-control" id="InputPrecio" name="Precio" value="@Model.Precio" required>
+                <div class="invalid-feedback">El Precio es obligatorio.</div>
+            </div>
+            <div class="col-md-6">
+                <label for="InputLongitud" class="form-label">Longitud del Inmueble</label>
+                <input type="text" class="form-control" id="InputLongitud" name="Longitud" value="@Model.Longitud" required>
+                <div class="invalid-feedback">El Longitud es obligatorio.</div>
+            </div>
+            <div class="col-md-6">
+                <label for="InputLatitud" class="form-label">Latitud del Inmueble</label>
+                <input type="text" class="form-control" id="InputLatitud" name="Latitud" value="@Model.Latitud" required>
+                <div class="invalid-feedback">El Latitud es obligatorio.</div>
+            </div>
+            <!-- Botones alineados -->
+            <div class="col-md-12 mt-3 d-flex justify-content-between">
+                <button type="submit" class="btn btn-primary">Actualizar</button>
+                <a class="btn btn-secondary" asp-action="Index">Volver</a>
+            </div>
+        </div>
+    </form>
+</div>
