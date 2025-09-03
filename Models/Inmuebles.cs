@@ -7,6 +7,7 @@ public class Inmuebles
     public string EmailPropietario { get; set; } = "";
     public string Uso { get; set; } = "";
     public string Tipo { get; set; } = "";
+    public string Direccion { get; set; } = "";
     public int Ambiente { get; set; }
     public decimal Precio { get; set; }
     public double Longitud { get; set; }

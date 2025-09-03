@@ -1,21 +1,17 @@
-@model List<proyecto_inmobiliaria2_mvc_guardia_lucero.Models.Inmuebles>
+@model List<proyecto_inmobiliaria2_mvc_guardia_lucero.Models.Contratos>
 @{
-    ViewData["Title"] = "Inmuebles";
+    ViewData["Title"] = "Contratos";
 }
 <div class="container mt-5" style="padding-top: 10px;">
 <div class="row">
 <div class="col-md-12 history bg-light border-right">
-<h1>Inmuebles</h1>
+<h1>Contratos</h1>
 <div class="table-responsive">
 <table class="table table-hover table-sm">
 <thead>
     <tr>
     <th scope="col">#</th>
-    <th scope="col">Email Propietario</th>
-    <th scope="col">Uso</th>
-    <th scope="col">Tipo</th>
-    <th scope="col">Ambiente</th>
-    <th scope="col">Precio</th>
+    <th scope="col">Monto</th>
     <th scope="col">Fecha de Creacion</th>
     <th scope="col">Accion</th>
     </tr>
@@ -28,11 +24,7 @@
     {
         <tr>
             <td>@i</td>
-            <td>@Html.DisplayFor(modelp => p.EmailPropietario)</td>
-            <td>@Html.DisplayFor(modelp => p.Uso)</td>
-            <td>@Html.DisplayFor(modelp => p.Tipo)</td>
-            <td>@Html.DisplayFor(modelp => p.Ambiente)</td>
-            <td>@Html.DisplayFor(modelp => p.Precio)</td>
+            <td>@Html.DisplayFor(modelp => p.Monto)</td>
             <td>@p.Fecha_creacion.ToString("dd/MM/yyyy")</td>
             <td>
     <div class="dropdown position-static">
@@ -41,18 +33,13 @@
         </button>
         <ul class="dropdown-menu">
             <li>
-                <a class="dropdown-item" asp-action="Edicion" asp-route-id="@p.Id_inmueble" title="Editar">
+                <a class="dropdown-item" asp-action="Edicion" asp-route-id="@p.Id_contrato" title="Editar">
                      <i class="fa-solid fa-pencil"></i> Modificar
                 </a>
             </li>
             <li>
-                <a class="dropdown-item" asp-action="Detalle" asp-route-id="@p.Id_inmueble" title="Detalle">
-                     <i class="fa-solid fa-book"></i> Detalle
-                </a>
-            </li>
-            <li>
                 <a href="javascript:void(0);" 
-                      data-id="@p.Id_inmueble" 
+                      data-id="@p.Id_contrato" 
                       class="dropdown-item" 
                       onclick="confirmDelete(this)">
                         <i class="fa-solid fa-trash"></i> Eliminar
@@ -68,7 +55,7 @@
 else
 {
     <tr>
-        <td colspan="8" class="text-center text-muted">No hay inmuebles cargados</td>
+        <td colspan="8" class="text-center text-muted">No hay propietarios cargados</td>
     </tr>
 }
 </tbody>
@@ -112,65 +99,41 @@ else
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h1 class="modal-title fs-5" id="agregarModalLabel">Agregar Inmuebles</h1>
+        <h1 class="modal-title fs-5" id="agregarModalLabel">Agregar Contrato</h1>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
 <form asp-action="Agregar" method="post" class="needs-validation" novalidate>
     <div class="mb-3">
-        <label for="InputEmailPropietario" class="form-label">Email Propietario</label>
-        <input class="form-control" list="propietariosList" id="InputEmailPropietario" name="EmailPropietario" required>
-        <datalist id="propietariosList">
-            
-        </datalist>
-        <input type="hidden" id="Id_propietario" name="Id_propietario">
-        <div class="invalid-feedback">El Email es obligatorio.</div>
-        
-    </div>
-
-
-    <div class="mb-3">
-        <label for="exampleInputUso" class="form-label">Uso</label>
-                <select class="form-select" id="exampleInputUso" name="Uso">
-                    <option value="Residencial">Residencial</option>
-                    <option value="Comercial">Comercial</option>
-        </select>
+        <label for="InputDni" class="form-label">Dni</label>
+        <input type="text" class="form-control" id="InputDni" name="Dni" required>
+        <div class="invalid-feedback">El DNI es obligatorio.</div>
     </div>
 
     <div class="mb-3">
-         <label for="exampleInputApellido" class="form-label">Tipo</label>
-            <select class="form-select" id="exampleInputTipo" name="Tipo">
-                    <option value="local">local</option>
-                    <option value="depósito">deposito</option>
-                    <option value="casa">casa</option>
-                    <option value="departamento">departamento</option>
-                </select>
+        <label for="InputApellido" class="form-label">Apellido</label>
+        <input type="text" class="form-control" id="InputApellido" name="Apellido" required>
+        <div class="invalid-feedback">El Apellido es obligatorio.</div>
     </div>
+
     <div class="mb-3">
-        <label for="InputDireccion" class="form-label">Direccion</label>
-        <input type="text" class="form-control" id="InputDireccion" name="Direccion" required>
-        <div class="invalid-feedback">El Direccion es obligatorio.</div>
+        <label for="InputNombre" class="form-label">Nombre</label>
+        <input type="text" class="form-control" id="InputNombre" name="Nombre" required>
+        <div class="invalid-feedback">El Nombre es obligatorio.</div>
     </div>
+
     <div class="mb-3">
-        <label for="InputAmbiente" class="form-label">Cantidad de Ambiente</label>
-        <input type="number" class="form-control" id="InputAmbiente" name="Ambiente" required>
-        <div class="invalid-feedback">El Ambiente es obligatorio.</div>
+        <label for="InputEmail1" class="form-label">Email</label>
+        <input type="email" class="form-control" id="InputEmail1" name="Email" required>
+        <div class="invalid-feedback">Ingrese un email válido.</div>
     </div>
+
     <div class="mb-3">
-        <label for="InputPrecio" class="form-label">Precio del Inmueble</label>
-        <input type="text" class="form-control" id="InputPrecio" name="Precio" required>
-        <div class="invalid-feedback">El Precio es obligatorio.</div>
+        <label for="InputTelefono" class="form-label">Teléfono</label>
+        <input type="text" class="form-control" id="InputTelefono" name="Telefono" required>
+        <div class="invalid-feedback">El Teléfono es obligatorio.</div>
     </div>
-    <div class="mb-3">
-        <label for="InputLongitud" class="form-label">Longitud del Inmueble</label>
-        <input type="text" class="form-control" id="InputLongitud" name="Longitud" required>
-        <div class="invalid-feedback">El Longitud es obligatorio.</div>
-    </div>
-    <div class="mb-3">
-        <label for="InputLatitud" class="form-label">Latitud del Inmueble</label>
-        <input type="text" class="form-control" id="InputLatitud" name="Latitud" required>
-        <div class="invalid-feedback">El Latitud es obligatorio.</div>
-    </div>
+
     <button type="submit" class="btn btn-primary">Agregar</button>
 </form>
       </div>
@@ -202,7 +165,7 @@ else
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        ¿Estás seguro de que deseas eliminar este inmueble?
+        ¿Estás seguro de que deseas eliminar este propietario?
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
@@ -226,42 +189,10 @@ else
     });
     function confirmDelete(element) {
         var id = element.getAttribute("data-id");
-        var url = "@Url.Action("Eliminar", "Inmueble")" + "/" + id;
+        var url = "@Url.Action("Eliminar", "Propietario")" + "/" + id;
         document.getElementById("confirmDeleteButton").setAttribute("href", url);
         var myModal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
         myModal.show();
     }
-const inputEmail = document.getElementById("InputEmailPropietario");
-const hiddenId = document.getElementById("Id_propietario");
-const dataList = document.getElementById("propietariosList");
 
-let timeout = null;
-
-inputEmail.addEventListener("input", function () {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => {
-        fetch(`/Propietario/Buscar?term=${encodeURIComponent(inputEmail.value)}`)
-            .then(res => res.json())
-            .then(data => {
-                // Limpio datalist
-                dataList.innerHTML = "";
-
-                data.forEach(p => {
-                    let option = document.createElement("option");
-                    option.value = p.email;
-                    option.dataset.id = p.id_propietario;
-                    dataList.appendChild(option);
-                });
-            });
-    }, 300); // debounce 300ms
-});
-
-inputEmail.addEventListener("change", function () {
-    const option = Array.from(dataList.options).find(opt => opt.value === inputEmail.value);
-    if (option) {
-        hiddenId.value = option.dataset.id;
-    } else {
-        hiddenId.value = "";
-    }
-});
 </script>

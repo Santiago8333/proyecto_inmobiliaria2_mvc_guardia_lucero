@@ -59,7 +59,7 @@ public class InmuebleController : Controller
         }
         else
         {
-            
+
             var inmueble = repo.ObtenerPorID(id);
             if (inmueble == null)
             {
@@ -69,5 +69,22 @@ public class InmuebleController : Controller
             ViewBag.Propietarios = repo.ObtenerTodosPropietarios();
             return View(inmueble);
         }
+    }
+    [HttpPost]
+    public IActionResult Actualizar(Inmuebles actualizarInmuebles)
+    {
+        if (ModelState.IsValid)
+        {
+            repo.ActualizarInmueble(actualizarInmuebles);
+            TempData["Mensaje"] = "Inmueble Modificado correctamente.";
+            return RedirectToAction("Index");
+        }
+        TempData["Mensaje"] = "Hubo un error al Modificar el Inmueble.";
+        return RedirectToAction("Index");
+    }
+    public IActionResult Detalle(int id)
+    {
+        var inmueble = repo.ObtenerPorID(id);
+        return View(inmueble);
     }
 }

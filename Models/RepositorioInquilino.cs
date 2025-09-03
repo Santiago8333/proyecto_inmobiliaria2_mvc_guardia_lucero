@@ -9,7 +9,7 @@ public class RepositorioInquilino
 
     public List<Inquilinos> ObtenerPaginados(int pagina, int tamanoPagina)
     {
-        List<Inquilinos> propietarios = new List<Inquilinos>();
+        List<Inquilinos> inquilinos = new List<Inquilinos>();
         using (MySqlConnection connection = new MySqlConnection(ConectionString))
         {
             var query = @"SELECT Id_inquilino, Dni, Apellido, Nombre, Email, Telefono, Fecha_creacion
@@ -26,7 +26,7 @@ public class RepositorioInquilino
                 var reader = command.ExecuteReader();
                 while (reader.Read())
                 {
-                    propietarios.Add(new Inquilinos
+                    inquilinos.Add(new Inquilinos
                     {
                         Id_inquilino = reader.GetInt32(nameof(Inquilinos.Id_inquilino)),
                         Dni = reader.GetString(nameof(Inquilinos.Dni)),
@@ -39,7 +39,7 @@ public class RepositorioInquilino
                 }
             }
         }
-        return propietarios;
+        return inquilinos;
     }
     public int ContarInquilinos()
     {

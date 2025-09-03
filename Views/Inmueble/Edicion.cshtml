@@ -13,16 +13,11 @@
         <div class="row">
             <div class="col-md-6">
                 <label for="InputEmailPropietario" class="form-label">Email Propietario</label>
-                <select class="form-control" id="InputEmailPropietario" name="Id_propietario" required>
-                    @foreach (var p in ViewBag.Propietarios)
-                    {
-                        if(Model.Id_propietario == p.Id_propietario){
-                            <option value="@p.Id_propietario" selected>@p.Email</option>
-                        }else{
-                            <option value="@p.Id_propietario">@p.Email</option>
-                        }
-                    }
-                </select>
+                <input class="form-control" list="propietariosList" id="InputEmailPropietario" name="EmailPropietario" value="@Model.EmailPropietario" required>
+                <datalist id="propietariosList">
+                    
+                </datalist>
+                <input type="hidden" id="Id_propietario" name="Id_propietario" value="@Model.Id_propietario">
                 <div class="invalid-feedback">El Email es obligatorio.</div>
                 <input type="hidden" id="Id_inmueble" name="Id_inmueble" value="@Model.Id_inmueble" required/>
             </div>
@@ -88,6 +83,11 @@
                 <input type="text" class="form-control" id="InputLatitud" name="Latitud" value="@Model.Latitud" required>
                 <div class="invalid-feedback">El Latitud es obligatorio.</div>
             </div>
+            <div class="col-md-6">
+                <label for="InputDireccion" class="form-label">Direccion del Inmueble</label>
+                <input type="text" class="form-control" id="InputDireccion" name="Direccion" value="@Model.Direccion" required>
+                <div class="invalid-feedback">El Direccion es obligatorio.</div>
+            </div>
             <!-- Botones alineados -->
             <div class="col-md-12 mt-3 d-flex justify-content-between">
                 <button type="submit" class="btn btn-primary">Actualizar</button>
@@ -96,3 +96,38 @@
         </div>
     </form>
 </div>
+<script>
+const inputEmail = document.getElementById("InputEmailPropietario");
+const hiddenId = document.getElementById("Id_propietario");
+const dataList = document.getElementById("propietariosList");
+
+let timeout = null;
+
+inputEmail.addEventListener("input", function () {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => {
+        fetch(`/Propietario/Buscar?term=${encodeURIComponent(inputEmail.value)}`)
+            .then(res => res.json())
+            .then(data => {
+                // Limpio datalist
+                dataList.innerHTML = "";
+
+                data.forEach(p => {
+                    let option = document.createElement("option");
+                    option.value = p.email;
+                    option.dataset.id = p.id_propietario;
+                    dataList.appendChild(option);
+                });
+            });
+    }, 300); // debounce 300ms
+});
+
+inputEmail.addEventListener("change", function () {
+    const option = Array.from(dataList.options).find(opt => opt.value === inputEmail.value);
+    if (option) {
+        hiddenId.value = option.dataset.id;
+    } else {
+        hiddenId.value = "";
+    }
+});
+</script>

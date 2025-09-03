@@ -3,6 +3,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Registrar el repositorio como servicio
 builder.Services.AddScoped<RepositorioPropietario>();
 builder.Services.AddScoped<RepositorioInmueble>();
+builder.Services.AddScoped<RepositorioContrato>();
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
