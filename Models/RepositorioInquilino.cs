@@ -158,39 +158,77 @@ public class RepositorioInquilino
         }
 
     }
-public Inquilinos? ObtenerPorEmail(string email)
-{
-    Inquilinos? res = null;
-
-    using (MySqlConnection connection = new MySqlConnection(ConectionString))
+    public Inquilinos? ObtenerPorEmail(string email)
     {
-        var query = @"SELECT Id_inquilino, Apellido, Nombre, Email, Telefono 
+        Inquilinos? res = null;
+
+        using (MySqlConnection connection = new MySqlConnection(ConectionString))
+        {
+            var query = @"SELECT Id_inquilino, Apellido, Nombre, Email, Telefono 
                       FROM inquilinos 
                       WHERE Email = @Email";
 
-        using (MySqlCommand command = new MySqlCommand(query, connection))
-        {
-            command.Parameters.AddWithValue("@Email", email);
-
-            connection.Open();
-
-            using (var reader = command.ExecuteReader())
+            using (MySqlCommand command = new MySqlCommand(query, connection))
             {
-                if (reader.Read())
+                command.Parameters.AddWithValue("@Email", email);
+
+                connection.Open();
+
+                using (var reader = command.ExecuteReader())
                 {
-                    res = new Inquilinos
+                    if (reader.Read())
                     {
-                        Id_inquilino = reader.GetInt32(reader.GetOrdinal("Id_inquilino")),
-                        Apellido = reader.GetString(reader.GetOrdinal("Apellido")),
-                        Nombre = reader.GetString(reader.GetOrdinal("Nombre")),
-                        Email = reader.GetString(reader.GetOrdinal("Email")),
-                        Telefono = reader.GetString(reader.GetOrdinal("Telefono"))
-                    };
+                        res = new Inquilinos
+                        {
+                            Id_inquilino = reader.GetInt32(reader.GetOrdinal("Id_inquilino")),
+                            Apellido = reader.GetString(reader.GetOrdinal("Apellido")),
+                            Nombre = reader.GetString(reader.GetOrdinal("Nombre")),
+                            Email = reader.GetString(reader.GetOrdinal("Email")),
+                            Telefono = reader.GetString(reader.GetOrdinal("Telefono"))
+                        };
+                    }
                 }
             }
         }
-    }
 
-    return res; // Retorna el propietario o null si no se encontró
-}
+        return res; // Retorna el propietario o null si no se encontró
+    }
+        public List<Inquilinos> BuscarPorEmail(string emailParcial)
+        {
+            var lista = new List<Inquilinos>();
+
+            using (MySqlConnection connection = new MySqlConnection(ConectionString))
+            {
+                var query = @"SELECT Id_inquilino, Nombre,Apellido, Email, Telefono,Dni,Fecha_creacion
+                            FROM inquilinos
+                            WHERE Email LIKE @Email";
+
+                using (MySqlCommand command = new MySqlCommand(query, connection))
+                {
+                    
+                    command.Parameters.AddWithValue("@Email", $"%{emailParcial}%");
+
+                    connection.Open();
+
+                    using (var reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            lista.Add(new Inquilinos
+                            {
+                                Id_inquilino = reader.GetInt32(reader.GetOrdinal("Id_inquilino")),
+                                Nombre = reader.GetString(reader.GetOrdinal("Nombre")),
+                                Apellido = reader.GetString(reader.GetOrdinal("Apellido")),
+                                Email = reader.GetString(reader.GetOrdinal("Email")),
+                                Telefono = reader.GetString(reader.GetOrdinal("Telefono")),
+                                Dni = reader.GetString(reader.GetOrdinal("Dni")),
+                                Fecha_creacion = reader.GetDateTime(reader.GetOrdinal("Fecha_creacion"))
+                            });
+                        }
+                    }
+                }
+            }
+
+            return lista;
+        }
 }

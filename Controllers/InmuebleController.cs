@@ -87,4 +87,11 @@ public class InmuebleController : Controller
         var inmueble = repo.ObtenerPorID(id);
         return View(inmueble);
     }
+    [HttpGet]
+public IActionResult Buscar(string term)
+{
+    
+    var resultados = repo.BuscarPorDireccion(term ?? "");
+    return Json(resultados);
+}
 }

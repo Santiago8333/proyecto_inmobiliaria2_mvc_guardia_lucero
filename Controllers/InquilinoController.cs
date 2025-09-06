@@ -94,9 +94,12 @@ public IActionResult Eliminar(int id)
         }
     }
 
-
-
-
+[HttpGet]
+public IActionResult Buscar(string term)
+{
+    var resultados = repo.BuscarPorEmail(term ?? "");
+    return Json(resultados);
+}
 
 
 

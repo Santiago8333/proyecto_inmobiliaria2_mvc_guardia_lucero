@@ -196,13 +196,13 @@ public class RepositorioInmueble : RepositorioBase
             }
         }
 
-        return res; 
+        return res;
     }
     public void ActualizarInmueble(Inmuebles actualizarPropietario)
+    {
+        using (MySqlConnection connection = new MySqlConnection(ConectionString))
         {
-            using (MySqlConnection connection = new MySqlConnection(ConectionString))
-            {
-                var query = $@"UPDATE inmuebles
+            var query = $@"UPDATE inmuebles
                SET 
                    {nameof(Inmuebles.Uso)} = @Uso, 
                    {nameof(Inmuebles.Tipo)} = @Tipo, 
@@ -213,23 +213,65 @@ public class RepositorioInmueble : RepositorioBase
                    {nameof(Inmuebles.Latitud)} = @Latitud,
                    {nameof(Inmuebles.Id_propietario)} = @Id_propietario
                WHERE Id_inmueble = @Id";
+            using (MySqlCommand command = new MySqlCommand(query, connection))
+            {
+                // Agrega los parámetros
+                command.Parameters.AddWithValue("@Uso", actualizarPropietario.Uso);
+                command.Parameters.AddWithValue("@Tipo", actualizarPropietario.Tipo);
+                command.Parameters.AddWithValue("@Direccion", actualizarPropietario.Direccion);
+                command.Parameters.AddWithValue("@Ambiente", actualizarPropietario.Ambiente);
+                command.Parameters.AddWithValue("@Precio", actualizarPropietario.Precio);
+                command.Parameters.AddWithValue("@Longitud", actualizarPropietario.Longitud);
+                command.Parameters.AddWithValue("@Latitud", actualizarPropietario.Latitud);
+                command.Parameters.AddWithValue("@Id_propietario", actualizarPropietario.Id_propietario);
+                command.Parameters.AddWithValue("@Id", actualizarPropietario.Id_inmueble);
+                connection.Open();
+                command.ExecuteNonQuery();
+                connection.Close();
+            }
+        }
+
+    }
+        public List<Inmuebles> BuscarPorDireccion(string direccionParcial)
+        {
+            var lista = new List<Inmuebles>();
+
+            using (MySqlConnection connection = new MySqlConnection(ConectionString))
+            {
+                var query = @"SELECT Id_inmueble, Id_propietario ,Uso, Tipo, Direccion,Ambiente,Precio,Longitud,Latitud,Fecha_creacion,Estado
+                            FROM inmuebles
+                            WHERE LOWER(Direccion) LIKE LOWER(@Direccion)";
+
                 using (MySqlCommand command = new MySqlCommand(query, connection))
                 {
-                    // Agrega los parámetros
-                    command.Parameters.AddWithValue("@Uso", actualizarPropietario.Uso);
-                    command.Parameters.AddWithValue("@Tipo", actualizarPropietario.Tipo);
-                    command.Parameters.AddWithValue("@Direccion", actualizarPropietario.Direccion);
-                    command.Parameters.AddWithValue("@Ambiente", actualizarPropietario.Ambiente);
-                    command.Parameters.AddWithValue("@Precio", actualizarPropietario.Precio);
-                    command.Parameters.AddWithValue("@Longitud", actualizarPropietario.Longitud);
-                    command.Parameters.AddWithValue("@Latitud", actualizarPropietario.Latitud);
-                    command.Parameters.AddWithValue("@Id_propietario", actualizarPropietario.Id_propietario);
-                    command.Parameters.AddWithValue("@Id", actualizarPropietario.Id_inmueble);
+                    
+                    command.Parameters.AddWithValue("@Direccion", $"%{direccionParcial}%");
+
                     connection.Open();
-                    command.ExecuteNonQuery();
-                    connection.Close();
+
+                    using (var reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            lista.Add(new Inmuebles
+                            {
+                                Id_inmueble = reader.GetInt32(reader.GetOrdinal("Id_inmueble")),
+                                Id_propietario = reader.GetInt32(reader.GetOrdinal("Id_propietario")),
+                                Uso = reader.GetString(reader.GetOrdinal("Uso")),
+                                Tipo = reader.GetString(reader.GetOrdinal("Tipo")),
+                                Direccion = reader.GetString(reader.GetOrdinal("Direccion")),
+                                Ambiente = reader.GetInt32(reader.GetOrdinal("Ambiente")),
+                                Precio = reader.GetDecimal(reader.GetOrdinal("Precio")),
+                                Longitud = reader.GetDouble(reader.GetOrdinal("Longitud")),
+                                Latitud = reader.GetDouble(reader.GetOrdinal("Latitud")),
+                                Fecha_creacion = reader.GetDateTime(reader.GetOrdinal("Fecha_creacion")),
+                                Estado = reader.GetBoolean(reader.GetOrdinal("Estado"))
+                            });
+                        }
+                    }
                 }
             }
 
+            return lista;
         }
 }

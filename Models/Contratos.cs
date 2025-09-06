@@ -16,5 +16,7 @@ public class Contratos
     public int Meses { get; set; }
     public string Creado_por { get; set; } = "";
     public string Terminado_por { get; set; } = "";
+    public string DireccionInmueble { get; set; } = "";
+    public string EmailInquilino { get; set; } = "";
     public Boolean Estado { get; set; }
 }

@@ -105,34 +105,53 @@ else
       <div class="modal-body">
 <form asp-action="Agregar" method="post" class="needs-validation" novalidate>
     <div class="mb-3">
-        <label for="InputDni" class="form-label">Dni</label>
-        <input type="text" class="form-control" id="InputDni" name="Dni" required>
-        <div class="invalid-feedback">El DNI es obligatorio.</div>
+        <label for="InputEmailInquilino" class="form-label">Email Inquilino</label>
+        <input class="form-control" list="inquilinoList" id="InputEmailInquilino" name="EmailInquilino" required>
+        <datalist id="inquilinoList">
+    
+        </datalist>
+        
+        <input type="hidden" id="Id_inquilino" name="Id_inquilino">
+        <div class="invalid-feedback">El Email del inquilino es obligatorio.</div>
+    </div>
+  <div class="mb-3">
+    <label for="InputDireccionInmueble" class="form-label">Direccion Inmueble</label>
+        <input class="form-control" list="inmuebleList" id="InputDireccionInmueble" name="DireccionInmueble" required>
+        <datalist id="inmuebleList">
+        </datalist>
+  <input type="hidden" id="Id_inmueble" name="Id_inmueble">
+   <div class="invalid-feedback">El Direccion del Inmueble es obligatorio.</div>
+  </div>
+    <div class="mb-3">
+        <label for="InputMonto" class="form-label">Monto</label>
+        <input type="text" class="form-control" id="InputMonto" name="Monto" required>
+        <div class="invalid-feedback">El Monto es obligatorio.</div>
     </div>
 
     <div class="mb-3">
-        <label for="InputApellido" class="form-label">Apellido</label>
-        <input type="text" class="form-control" id="InputApellido" name="Apellido" required>
-        <div class="invalid-feedback">El Apellido es obligatorio.</div>
+         <label for="exampleInputFecha_desde" class="form-label">Fecha desde</label>
+        <input type="date" class="form-control" id="exampleInputFecha_desde" name="Fecha_desde" >
+        <div class="invalid-feedback">El Fecha desde es obligatorio.</div>
     </div>
 
     <div class="mb-3">
-        <label for="InputNombre" class="form-label">Nombre</label>
-        <input type="text" class="form-control" id="InputNombre" name="Nombre" required>
-        <div class="invalid-feedback">El Nombre es obligatorio.</div>
+        <label for="exampleInputFecha_hasta" class="form-label">Fecha hasta</label>
+        <input type="date" class="form-control" id="exampleInputFecha_hasta" name="Fecha_hasta" readonly>
+        <div class="invalid-feedback">Ingrese un Fecha hasta válido.</div>
     </div>
-
     <div class="mb-3">
-        <label for="InputEmail1" class="form-label">Email</label>
-        <input type="email" class="form-control" id="InputEmail1" name="Email" required>
-        <div class="invalid-feedback">Ingrese un email válido.</div>
+        <label for="exampleInputMeses" class="form-label">Duración del contrato (meses)</label>
+            <input type="number" class="form-control" id="exampleInputMeses" name="Meses" min="1" max="600" value="1" >
+        <div class="invalid-feedback">Ingrese un Meses hasta válido.</div>
     </div>
-
     <div class="mb-3">
-        <label for="InputTelefono" class="form-label">Teléfono</label>
-        <input type="text" class="form-control" id="InputTelefono" name="Telefono" required>
-        <div class="invalid-feedback">El Teléfono es obligatorio.</div>
-    </div>
+            <label for="exampleInputMonto" class="form-label">Monto mensual</label>
+            <input type="text" class="form-control" id="exampleInputMonto"  name="Monto"  readonly>
+        </div>
+         <div class="mt-3">
+              <label for="exampleInputMonto_total" class="form-label">Monto Total</label>
+              <input type="number" class="form-control" id="exampleInputMonto_total" name="Monto_total" readonly >
+          </div>
 
     <button type="submit" class="btn btn-primary">Agregar</button>
 </form>
@@ -194,5 +213,106 @@ else
         var myModal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
         myModal.show();
     }
+const inputEmail = document.getElementById("InputEmailInquilino");
+const hiddenId = document.getElementById("Id_inquilino");
+const dataList = document.getElementById("inquilinoList");
 
+let timeout = null;
+
+inputEmail.addEventListener("input", function () {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => {
+        fetch(`/Inquilino/Buscar?term=${encodeURIComponent(inputEmail.value)}`)
+            .then(res => res.json())
+            .then(data => {
+                // Limpio datalist
+                dataList.innerHTML = "";
+
+                data.forEach(p => {
+                    let option = document.createElement("option");
+                    option.value = p.email;
+                    option.dataset.id = p.id_inquilino;
+                    dataList.appendChild(option);
+                });
+            });
+    }, 300); // debounce 300ms
+});
+
+inputEmail.addEventListener("change", function () {
+    const option = Array.from(dataList.options).find(opt => opt.value === inputEmail.value);
+    if (option) {
+        hiddenId.value = option.dataset.id;
+    } else {
+        hiddenId.value = "";
+    }
+});
+const inputDireccion = document.getElementById("InputDireccionInmueble");
+const hiddenId2 = document.getElementById("Id_inmueble");
+const dataList2 = document.getElementById("inmuebleList");
+
+let timeout2 = null;
+
+inputDireccion.addEventListener("input", function () {
+    clearTimeout(timeout2);
+    timeout2 = setTimeout(() => {
+        fetch(`/Inmueble/Buscar?term=${encodeURIComponent(inputDireccion.value)}`)
+            .then(res => res.json())
+            .then(data => {
+                // Limpio datalist
+                dataList2.innerHTML = "";
+
+                data.forEach(p => {
+                    let option = document.createElement("option");
+                    option.value = p.direccion; // lo que se muestra en la lista
+                    option.dataset.id = p.id_inmueble; // asegurate que coincida con tu modelo
+                    dataList2.appendChild(option);
+                });
+            });
+    }, 500); // espera medio segundo
+});
+
+inputDireccion.addEventListener("change", function () {
+    const option = Array.from(dataList2.options).find(opt => opt.value === inputDireccion.value);
+    if (option) {
+        hiddenId2.value = option.dataset.id;
+    } else {
+        hiddenId2.value = "";
+    }
+});
+//logica contrato
+    // Escuchar cambios en meses y en fecha desde
+    document.getElementById('exampleInputMeses').addEventListener('input', calcularFechaHastaYMontoTotal);
+    document.getElementById('exampleInputFecha_desde').addEventListener('change', calcularFechaHastaYMontoTotal);
+    document.getElementById('InputMonto').addEventListener('input', calcularFechaHastaYMontoTotal);
+
+    function calcularFechaHastaYMontoTotal() {
+        var fechaInicio = document.getElementById('exampleInputFecha_desde').value;
+        var meses = parseInt(document.getElementById('exampleInputMeses').value);
+        var montoMensual = parseFloat(document.getElementById('InputMonto').value);
+
+        if (fechaInicio && meses > 0 && !isNaN(montoMensual)) {
+            var fechaObj = new Date(fechaInicio);
+
+            // Calcular nueva fecha sumando meses
+            fechaObj.setMonth(fechaObj.getMonth() + meses);
+
+            var year = fechaObj.getFullYear();
+            var month = ('0' + (fechaObj.getMonth() + 1)).slice(-2);
+            var day = ('0' + fechaObj.getDate()).slice(-2);
+
+            var fechaHastaFormateada = `${year}-${month}-${day}`;
+            document.getElementById('exampleInputFecha_hasta').value = fechaHastaFormateada;
+
+            // Calcular monto total
+            var montoTotal = meses * montoMensual;
+            document.getElementById('exampleInputMonto_total').value = montoTotal;
+
+            // Mostrar monto mensual (por si quieres recalcular)
+            document.getElementById('exampleInputMonto').value = montoMensual;
+        } else {
+            document.getElementById('exampleInputFecha_hasta').value = '';
+            document.getElementById('exampleInputMonto_total').value = '';
+            document.getElementById('exampleInputMonto').value = '';
+        }
+    }
 </script>
