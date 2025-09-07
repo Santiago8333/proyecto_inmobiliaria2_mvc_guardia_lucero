@@ -1,0 +1,122 @@
+@model proyecto_inmobiliaria2_mvc_guardia_lucero.Models.Contratos
+@{
+    ViewData["Title"] = "Editar Contrato";
+}
+
+<div class="container mt-5">
+    <h1>Editar Contrato</h1>
+
+    <form asp-action="Actualizar" method="post" class="needs-validation" novalidate>
+        <input type="hidden" id="Id_contrato" name="Id_contrato" value="@Model.Id_contrato" />
+
+        <!-- Inquilino -->
+        <div class="mb-3">
+            <label for="InputEmailInquilino" class="form-label">Email Inquilino</label>
+            <input class="form-control" list="inquilinoList" id="InputEmailInquilino" 
+                   name="EmailInquilino" value="@Model.EmailInquilino" required>
+            <datalist id="inquilinoList"></datalist>
+            <input type="hidden" id="Id_inquilino" name="Id_inquilino" value="@Model.Id_inquilino">
+            <div class="invalid-feedback">El Email del inquilino es obligatorio.</div>
+        </div>
+
+        <!-- Inmueble -->
+        <div class="mb-3">
+            <label for="InputDireccionInmueble" class="form-label">Direccion Inmueble</label>
+            <input class="form-control" list="inmuebleList" id="InputDireccionInmueble" 
+                   name="DireccionInmueble" value="@Model.DireccionInmueble required>
+            <datalist id="inmuebleList"></datalist>
+            <input type="hidden" id="Id_inmueble" name="Id_inmueble" value="@Model.Id_inmueble">
+            <div class="invalid-feedback">La dirección del inmueble es obligatoria.</div>
+        </div>
+
+        <!-- Monto -->
+        <div class="mb-3">
+            <label for="InputMonto" class="form-label">Monto</label>
+            <input type="text" class="form-control" id="InputMonto" 
+                   name="Monto" value="@Model.Monto" required>
+            <div class="invalid-feedback">El monto es obligatorio.</div>
+        </div>
+
+        <!-- Fechas -->
+        <div class="mb-3">
+            <label for="Fecha_desde" class="form-label">Fecha desde</label>
+            <input type="date" class="form-control" id="Fecha_desde" 
+                   name="Fecha_desde" value="@Model.Fecha_desde.ToString("yyyy-MM-dd")">
+        </div>
+
+        <div class="mb-3">
+            <label for="Fecha_hasta" class="form-label">Fecha hasta</label>
+            <input type="date" class="form-control" id="Fecha_hasta" 
+                   name="Fecha_hasta" value="@Model.Fecha_hasta.ToString("yyyy-MM-dd")" readonly>
+        </div>
+
+        <!-- Meses -->
+        <div class="mb-3">
+            <label for="Meses" class="form-label">Duración del contrato (meses)</label>
+            <input type="number" class="form-control" id="Meses" 
+                   name="Meses" value="@Model.Meses" min="1" max="600">
+        </div>
+
+        <!-- Monto total -->
+        <div class="mb-3">
+            <label for="Monto_total" class="form-label">Monto Total</label>
+            <input type="number" class="form-control" id="Monto_total" 
+                   name="Monto_total" value="@Model.Monto_total" readonly>
+        </div>
+
+        <!-- Botones -->
+        <div class="d-flex justify-content-between">
+            <button type="submit" class="btn btn-primary">Actualizar</button>
+            <a asp-action="Index" class="btn btn-secondary">Volver</a>
+        </div>
+    </form>
+</div>
+<script>
+const inputInquilino = document.getElementById("InputEmailInquilino");
+const hiddenInquilino = document.getElementById("Id_inquilino");
+const listInquilinos = document.getElementById("inquilinoList");
+
+inputInquilino.addEventListener("input", function() {
+    fetch(`/Inquilino/Buscar?term=${encodeURIComponent(inputInquilino.value)}`)
+        .then(res => res.json())
+        .then(data => {
+            listInquilinos.innerHTML = "";
+            data.forEach(p => {
+                let option = document.createElement("option");
+                option.value = p.email;
+                option.dataset.id = p.id_inquilino;
+                listInquilinos.appendChild(option);
+            });
+        });
+});
+
+inputInquilino.addEventListener("change", function() {
+    const option = Array.from(listInquilinos.options).find(opt => opt.value === inputInquilino.value);
+    hiddenInquilino.value = option ? option.dataset.id : "";
+});
+
+
+// Inmueble autocomplete
+const inputInmueble = document.getElementById("InputDireccionInmueble");
+const hiddenInmueble = document.getElementById("Id_inmueble");
+const listInmuebles = document.getElementById("inmuebleList");
+
+inputInmueble.addEventListener("input", function() {
+    fetch(`/Inmueble/Buscar?term=${encodeURIComponent(inputInmueble.value)}`)
+        .then(res => res.json())
+        .then(data => {
+            listInmuebles.innerHTML = "";
+            data.forEach(p => {
+                let option = document.createElement("option");
+                option.value = p.direccion;
+                option.dataset.id = p.id_inmueble;
+                listInmuebles.appendChild(option);
+            });
+        });
+});
+
+inputInmueble.addEventListener("change", function() {
+    const option = Array.from(listInmuebles.options).find(opt => opt.value === inputInmueble.value);
+    hiddenInmueble.value = option ? option.dataset.id : "";
+});
+</script>

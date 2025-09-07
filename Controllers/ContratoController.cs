@@ -24,4 +24,33 @@ public class ContratoController : Controller
         ViewBag.Registros = totalRegistros > 0;
         return View(listaInquilinos);
     }
+    [HttpPost]
+    public ActionResult Agregar(Contratos contrato)
+    {
+        if (ModelState.IsValid)
+        {
+
+            TempData["Mensaje"] = "Contrato agregado exitosamente.";
+            contrato.Monto_a_pagar = contrato.Monto_total;
+            repo.AgregarContrato(contrato);
+            return RedirectToAction("Index");
+
+        }
+        TempData["Mensaje"] = "Error al agregar.";
+        return View(contrato);
+    }
+
+public IActionResult Eliminar(int id)
+{
+  var propietario = repo.BuscarPorId(id);
+        if (propietario == null)
+        {
+            TempData["Mensaje"] = "Contrato no encontrado.";
+            return RedirectToAction("Index");
+        }
+        repo.EliminarContrato(id);
+        TempData["Mensaje"] = "Contrato eliminado.";
+        return RedirectToAction("Index");
+    
+}
 }

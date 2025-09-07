@@ -3,7 +3,7 @@ using MySql.Data.MySqlClient;
 namespace proyecto_inmobiliaria2_mvc_guardia_lucero.Models;
 
 public class RepositorioContrato : RepositorioBase
-{ 
+{
 
 
     public RepositorioContrato(IConfiguration configuration) : base(configuration)
@@ -16,24 +16,28 @@ public class RepositorioContrato : RepositorioBase
         using (MySqlConnection connection = new MySqlConnection(ConectionString))
         {
             var query = @"SELECT   
-                            Id_contrato,
-                            Id_inquilino,
-                            Id_inmueble,
-                            Contrato_completado,
-                            Monto,
-                            Monto_total,
-                            Monto_a_pagar,
-                            Fecha_creacion,
-                            Fecha_desde,
-                            Fecha_hasta,
-                            Fecha_final,
-                            Meses,
-                            Creado_por,
-                            Terminado_por,
-                            Estado
-                        FROM contratos
-                        ORDER BY Id_contrato
-                        LIMIT @limit OFFSET @offset";
+                            c.Id_contrato,
+                            c.Id_inquilino,
+                            c.Id_inmueble,
+                            c.Contrato_completado,
+                            c.Monto,
+                            c.Monto_total,
+                            c.Monto_a_pagar,
+                            c.Fecha_creacion,
+                            c.Fecha_desde,
+                            c.Fecha_hasta,
+                            c.Fecha_final,
+                            c.Meses,
+                            c.Creado_por,
+                            c.Terminado_por,
+                            c.Estado,
+                            i.Direccion AS DireccionInmueble,
+                            q.Email AS EmailInquilino
+                        FROM contratos c
+                        JOIN inmuebles i ON c.Id_inmueble = i.Id_inmueble
+                        JOIN inquilinos q ON c.Id_inquilino = q.Id_inquilino
+                        ORDER BY c.Id_contrato
+                        LIMIT @limit OFFSET @offset;";
 
             using (MySqlCommand command = new MySqlCommand(query, connection))
             {
@@ -56,9 +60,13 @@ public class RepositorioContrato : RepositorioBase
                         Fecha_creacion = reader.GetDateTime(nameof(Contratos.Fecha_creacion)),
                         Fecha_desde = reader.GetDateTime(nameof(Contratos.Fecha_desde)),
                         Fecha_hasta = reader.GetDateTime(nameof(Contratos.Fecha_hasta)),
-                        Fecha_final = reader.GetDateTime(nameof(Contratos.Fecha_final)),
+                        Fecha_final = reader.IsDBNull(reader.GetOrdinal("Fecha_final"))
+                                        ? (DateTime?)null
+                                        : reader.GetDateTime("Fecha_final"),
                         Meses = reader.GetInt32(nameof(Contratos.Meses)),
-                        Estado = reader.GetBoolean(nameof(Contratos.Estado))
+                        Estado = reader.GetBoolean(nameof(Contratos.Estado)),
+                        DireccionInmueble = reader.GetString("DireccionInmueble"),
+                        EmailInquilino = reader.GetString("EmailInquilino")
                     });
                 }
             }
@@ -77,5 +85,135 @@ public class RepositorioContrato : RepositorioBase
             }
         }
     }
+    public void AgregarContrato(Contratos nuevoContrato)
+    {
+
+        using (MySqlConnection connection = new MySqlConnection(ConectionString))
+        {
+            var query = $@"INSERT INTO contratos ({nameof(Contratos.Id_inquilino)}, {nameof(Contratos.Id_inmueble)}, {nameof(Contratos.Monto)}, {nameof(Contratos.Monto_total)}, {nameof(Contratos.Monto_a_pagar)},{nameof(Contratos.Fecha_desde)},{nameof(Contratos.Fecha_hasta)},{nameof(Contratos.Fecha_final)},{nameof(Contratos.Meses)})
+                    VALUES (@Id_inquilino, @Id_inmueble, @Monto,@Monto_total,@Monto_a_pagar,@Fecha_desde,@Fecha_hasta,@Fecha_final,@Meses)";
+
+            using (MySqlCommand command = new MySqlCommand(query, connection))
+            {
+                // Agrega los parámetros
+                command.Parameters.AddWithValue("@Id_inquilino", nuevoContrato.Id_inquilino);
+                command.Parameters.AddWithValue("@Id_inmueble", nuevoContrato.Id_inmueble);
+                command.Parameters.AddWithValue("@Monto", nuevoContrato.Monto);
+                command.Parameters.AddWithValue("@Monto_total", nuevoContrato.Monto_total);
+                command.Parameters.AddWithValue("@Monto_a_pagar", nuevoContrato.Monto_a_pagar);
+                command.Parameters.AddWithValue("@Fecha_desde", nuevoContrato.Fecha_desde);
+                command.Parameters.AddWithValue("@Fecha_hasta", nuevoContrato.Fecha_hasta);
+                command.Parameters.AddWithValue("@Fecha_final", nuevoContrato.Fecha_final);
+                command.Parameters.AddWithValue("@Meses", nuevoContrato.Meses);
+                connection.Open();
+                command.ExecuteNonQuery(); // Ejecuta la consulta de inserción
+                connection.Close();
+            }
+        }
+    }
+        public Contratos? BuscarPorId(int id)
+{
+    Contratos? contrato = null;
+
+    using (MySqlConnection connection = new MySqlConnection(ConectionString))
+    {
+        var query = $@"
+            SELECT 
+                {nameof(Contratos.Id_contrato)},
+                {nameof(Contratos.Id_inquilino)},
+                {nameof(Contratos.Id_inmueble)},
+                {nameof(Contratos.Monto)},
+                {nameof(Contratos.Monto_total)},
+                {nameof(Contratos.Monto_a_pagar)},
+                {nameof(Contratos.Fecha_desde)},
+                {nameof(Contratos.Fecha_hasta)},
+                {nameof(Contratos.Fecha_final)},
+                {nameof(Contratos.Meses)}
+            FROM contratos
+            WHERE {nameof(Contratos.Id_contrato)} = @Id";
+
+        using (MySqlCommand command = new MySqlCommand(query, connection))
+        {
+            command.Parameters.AddWithValue("@Id", id);
+
+            connection.Open();
+            using (var reader = command.ExecuteReader())
+            {
+                if (reader.Read())
+                {
+                    contrato = new Contratos
+                    {
+                        Id_contrato   = reader.GetInt32(nameof(Contratos.Id_contrato)),
+                        Id_inquilino  = reader.GetInt32(nameof(Contratos.Id_inquilino)),
+                        Id_inmueble   = reader.GetInt32(nameof(Contratos.Id_inmueble)),
+                        Monto         = reader.GetDecimal(nameof(Contratos.Monto)),
+                        Monto_total   = reader.GetDecimal(nameof(Contratos.Monto_total)),
+                        Monto_a_pagar = reader.GetDecimal(nameof(Contratos.Monto_a_pagar)),
+                        Fecha_desde   = reader.GetDateTime(nameof(Contratos.Fecha_desde)),
+                        Fecha_hasta   = reader.GetDateTime(nameof(Contratos.Fecha_hasta)),
+                        Fecha_final = reader.IsDBNull(reader.GetOrdinal("Fecha_final"))
+                                    ? (DateTime?)null
+                                    : reader.GetDateTime("Fecha_final"),
+                        Meses  = reader.GetInt32(nameof(Contratos.Meses))
+                    };
+                }
+            }
+        }
+    }
+
+    return contrato;
+}
+public void ActualizarContrato(Contratos contrato)
+{
+    using (MySqlConnection connection = new MySqlConnection(ConectionString))
+    {
+        var query = $@"
+            UPDATE contratos SET
+                {nameof(Contratos.Id_inquilino)} = @Id_inquilino,
+                {nameof(Contratos.Id_inmueble)} = @Id_inmueble,
+                {nameof(Contratos.Monto)} = @Monto,
+                {nameof(Contratos.Monto_total)} = @Monto_total,
+                {nameof(Contratos.Monto_a_pagar)} = @Monto_a_pagar,
+                {nameof(Contratos.Fecha_desde)} = @Fecha_desde,
+                {nameof(Contratos.Fecha_hasta)} = @Fecha_hasta,
+                {nameof(Contratos.Fecha_final)} = @Fecha_final,
+                {nameof(Contratos.Meses)} = @Meses
+            WHERE {nameof(Contratos.Id_contrato)} = @Id_contrato";
+
+        using (MySqlCommand command = new MySqlCommand(query, connection))
+        {
+            command.Parameters.AddWithValue("@Id_contrato", contrato.Id_contrato);
+            command.Parameters.AddWithValue("@Id_inquilino", contrato.Id_inquilino);
+            command.Parameters.AddWithValue("@Id_inmueble", contrato.Id_inmueble);
+            command.Parameters.AddWithValue("@Monto", contrato.Monto);
+            command.Parameters.AddWithValue("@Monto_total", contrato.Monto_total);
+            command.Parameters.AddWithValue("@Monto_a_pagar", contrato.Monto_a_pagar);
+            command.Parameters.AddWithValue("@Fecha_desde", contrato.Fecha_desde);
+            command.Parameters.AddWithValue("@Fecha_hasta", contrato.Fecha_hasta);
+            command.Parameters.AddWithValue("@Fecha_final", (object?)contrato.Fecha_final ?? DBNull.Value);
+            command.Parameters.AddWithValue("@Meses", contrato.Meses);
+
+            connection.Open();
+            command.ExecuteNonQuery();
+            connection.Close();
+        }
+    }
+}
+public void EliminarContrato(int id)
+{
+    using (MySqlConnection connection = new MySqlConnection(ConectionString))
+    {
+        var query = $@"DELETE FROM contratos WHERE {nameof(Contratos.Id_contrato)} = @Id";
+
+        using (MySqlCommand command = new MySqlCommand(query, connection))
+        {
+            command.Parameters.AddWithValue("@Id", id);
+
+            connection.Open();
+            command.ExecuteNonQuery();
+            connection.Close();
+        }
+    }
+}
 
 }

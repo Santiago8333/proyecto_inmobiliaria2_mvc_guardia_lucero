@@ -45,6 +45,7 @@ public class PropietarioController : Controller
             else
             {
                 TempData["Mensaje"] = "Propietario agregado exitosamente.";
+               
                 repo.AgregarPropietario(propietario);
                 return RedirectToAction("Index");
             }

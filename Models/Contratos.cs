@@ -12,7 +12,7 @@ public class Contratos
     public DateTime Fecha_creacion { get; set; }
     public DateTime Fecha_desde { get; set; }
     public DateTime Fecha_hasta { get; set; }
-    public DateTime Fecha_final { get; set; }
+    public DateTime? Fecha_final { get; set; }
     public int Meses { get; set; }
     public string Creado_por { get; set; } = "";
     public string Terminado_por { get; set; } = "";
