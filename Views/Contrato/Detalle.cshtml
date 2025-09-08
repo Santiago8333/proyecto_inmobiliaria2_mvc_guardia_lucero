@@ -1,0 +1,54 @@
+@model proyecto_inmobiliaria2_mvc_guardia_lucero.Models.Contratos
+@{
+    ViewData["Title"] = "Contrato Detalle";
+    string estadoTexto = Model.Estado ? "Activo" : "Inactivo";
+    string completado = Model.Contrato_completado ? "SI" : "NO";
+}
+<h1>Inmueble detalle</h1>
+<form>
+    <div class="mb-3">
+        <label for="EmailInquilino" class="form-label">Email del Inquilino</label>
+        <input type="text" class="form-control" id="EmailInquilino" name="EmailInquilino" value="@Model.EmailInquilino" readonly/>
+    </div>
+    <div class="mb-3">
+        <label for="DireccionInmueble" class="form-label">Direccion del inmueble</label>
+        <input type="text" class="form-control" id="DireccionInmueble" name="DireccionInmueble" value="@Model.DireccionInmueble" readonly/>
+    </div>
+    <div class="mb-3">
+        <label for="Monto" class="form-label">Monto a pagar por mes</label>
+        <input type="text" class="form-control" id="Monto" name="Monto" value="@Model.Monto" readonly/>
+    </div>
+    <div class="mb-3">
+        <label for="Meses" class="form-label">Cantidad de Meses</label>
+        <input type="text" class="form-control" id="Meses" name="Meses" value="@Model.Meses" readonly/>
+    </div>
+    <div class="mb-3">
+        <label for="Monto_total" class="form-label">Monto total a pagar</label>
+        <input type="text" class="form-control" id="Monto_total" name="Monto_total" value="@Model.Monto_total" readonly/>
+    </div>
+    <div class="mb-3">
+        <label for="Monto_a_pagar" class="form-label">Monto que falta pagar</label>
+        <input type="text" class="form-control" id="Monto_a_pagar" name="Monto_a_pagar" value="@Model.Monto_a_pagar" readonly/>
+    </div>
+    <div class="mb-3">
+        <label for="Fecha_desde" class="form-label">Fecha desde</label>
+        <input type="text" class="form-control" id="Fecha_desde" name="Fecha_desde" value="@Model.Fecha_desde.ToString("yyyy-MM-dd")" readonly/>
+    </div>
+    <div class="mb-3">
+        <label for="Fecha_hasta" class="form-label">Fecha hasta</label>
+        <input type="text" class="form-control" id="Fecha_hasta" name="Fecha_hasta" value="@Model.Fecha_hasta.ToString("yyyy-MM-dd")" readonly/>
+    </div>
+    <div class="mb-3">
+        <label for="Fecha_creacion" class="form-label">Fecha creacion</label>
+        <input type="text" class="form-control" id="Fecha_creacion" name="Fecha_creacion" value="@Model.Fecha_creacion.ToString("yyyy-MM-dd")" readonly/>
+    </div>
+    <div class="mb-3">
+        <label for="Contrato_completado" class="form-label">Contrato completado</label>
+        <input type="text" class="form-control" id="Contrato_completado" name="Contrato_completado" value="@completado" readonly/>
+    </div>
+    <div class="mb-3">
+    <label for="Estado" class="form-label">Estado</label>
+    <input type="text" class="form-control" id="Estado" name="Estado" value="@estadoTexto" readonly/>
+    </div>
+</form>
+ <a class="btn btn-info" asp-action="Index">Volver</a>

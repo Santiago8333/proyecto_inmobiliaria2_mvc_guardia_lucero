@@ -26,6 +26,7 @@
     int i = 1;
     foreach (var p in Model)
     {
+    if(p.Estado){
         <tr>
             <td>@i</td>
             <td>@Html.DisplayFor(modelp => p.EmailPropietario)</td>
@@ -54,6 +55,14 @@
                 <a href="javascript:void(0);" 
                       data-id="@p.Id_inmueble" 
                       class="dropdown-item" 
+                      onclick="confirmDesactivar(this)">
+                        <i class="fa-solid fa-x"></i> Desactivar
+                  </a>
+            </li>
+            <li>
+                <a href="javascript:void(0);" 
+                      data-id="@p.Id_inmueble" 
+                      class="dropdown-item" 
                       onclick="confirmDelete(this)">
                         <i class="fa-solid fa-trash"></i> Eliminar
                   </a>
@@ -63,6 +72,53 @@
 </td>
         </tr>
         i++;
+        }else{
+            <tr class="table-danger">
+            <td>@i</td>
+            <td>@Html.DisplayFor(modelp => p.EmailPropietario)</td>
+            <td>@Html.DisplayFor(modelp => p.Uso)</td>
+            <td>@Html.DisplayFor(modelp => p.Tipo)</td>
+            <td>@Html.DisplayFor(modelp => p.Ambiente)</td>
+            <td>@Html.DisplayFor(modelp => p.Precio)</td>
+            <td>@p.Fecha_creacion.ToString("dd/MM/yyyy")</td>
+            <td>
+    <div class="dropdown position-static">
+        <button class="btn btn-sm btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-three-dots-vertical"></i> <!-- Icono de 3 puntos -->
+        </button>
+        <ul class="dropdown-menu">
+            <li>
+                <a class="dropdown-item" asp-action="Edicion" asp-route-id="@p.Id_inmueble" title="Editar">
+                     <i class="fa-solid fa-pencil"></i> Modificar
+                </a>
+            </li>
+            <li>
+                <a class="dropdown-item" asp-action="Detalle" asp-route-id="@p.Id_inmueble" title="Detalle">
+                     <i class="fa-solid fa-book"></i> Detalle
+                </a>
+            </li>
+            <li>
+                <a href="javascript:void(0);" 
+                      data-id="@p.Id_inmueble" 
+                      class="dropdown-item" 
+                      onclick="confirmActivate(this)">
+                      <i class="fa-solid fa-check"></i> Activar
+                  </a>
+            </li>
+            <li>
+                <a href="javascript:void(0);" 
+                      data-id="@p.Id_inmueble" 
+                      class="dropdown-item" 
+                      onclick="confirmDelete(this)">
+                        <i class="fa-solid fa-trash"></i> Eliminar
+                  </a>
+            </li>
+        </ul>
+    </div>
+</td>
+        </tr>
+        i++;
+        }
     }
 }
 else
@@ -211,6 +267,42 @@ else
     </div>
   </div>
 </div>
+<!-- Modal desactivar-->
+<div class="modal fade" id="confirmDesactivarModal" tabindex="-1" aria-labelledby="confirmDesactivarModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="confirmDesactivarModalLabel">Confirmar Desactivar</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        ¿Estás seguro de que deseas Desactivar este inmueble?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <a id="confirmDesactivarButton" href="#" class="btn btn-danger">Desactivar</a>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Modal activar-->
+<div class="modal fade" id="confirmActivarModal" tabindex="-1" aria-labelledby="confirmActivarModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="confirmActivarModalLabel">Confirmar Activar</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        ¿Estás seguro de que deseas Activar este inmueble?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <a id="confirmActivarButton" href="#" class="btn btn-danger">Activar</a>
+      </div>
+    </div>
+  </div>
+</div>
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         var toastElement = document.getElementById("successToast");
@@ -229,6 +321,20 @@ else
         var url = "@Url.Action("Eliminar", "Inmueble")" + "/" + id;
         document.getElementById("confirmDeleteButton").setAttribute("href", url);
         var myModal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
+        myModal.show();
+    }
+    function confirmDesactivar(element) {
+        var id = element.getAttribute("data-id");
+        var url = "@Url.Action("Desactivar", "Inmueble")" + "/" + id;
+        document.getElementById("confirmDesactivarButton").setAttribute("href", url);
+        var myModal = new bootstrap.Modal(document.getElementById('confirmDesactivarModal'));
+        myModal.show();
+    }
+        function confirmActivate(element) {
+        var id = element.getAttribute("data-id");
+        var url = "@Url.Action("Activar", "Inmueble")" + "/" + id;
+        document.getElementById("confirmActivarButton").setAttribute("href", url);
+        var myModal = new bootstrap.Modal(document.getElementById('confirmActivarModal'));
         myModal.show();
     }
 const inputEmail = document.getElementById("InputEmailPropietario");

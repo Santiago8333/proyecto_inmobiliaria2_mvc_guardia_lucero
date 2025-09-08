@@ -40,9 +40,9 @@ public class ContratoController : Controller
         return View(contrato);
     }
 
-public IActionResult Eliminar(int id)
-{
-  var propietario = repo.BuscarPorId(id);
+    public IActionResult Eliminar(int id)
+    {
+        var propietario = repo.BuscarPorId(id);
         if (propietario == null)
         {
             TempData["Mensaje"] = "Contrato no encontrado.";
@@ -51,6 +51,31 @@ public IActionResult Eliminar(int id)
         repo.EliminarContrato(id);
         TempData["Mensaje"] = "Contrato eliminado.";
         return RedirectToAction("Index");
-    
-}
+
+    }
+    public IActionResult Detalle(int id)
+    {
+        var contrato = repo.BuscarPorId(id);
+        return View(contrato);
+    }
+    public IActionResult Edicion(int id)
+    {
+        if (id == 0)
+        {
+            TempData["Mensaje"] = "Contrato no encontrado.";
+            return RedirectToAction("Index");
+        }
+        else
+        {
+
+            var contrato = repo.BuscarPorId(id);
+            if (contrato == null)
+            {
+                TempData["Mensaje"] = "Contrato no encontrado.";
+                return RedirectToAction("Index");
+            }
+
+            return View(contrato);
+        }
+    }
 }

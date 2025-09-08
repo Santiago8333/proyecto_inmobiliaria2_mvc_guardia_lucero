@@ -66,7 +66,7 @@ public class InmuebleController : Controller
                 TempData["Mensaje"] = "Inmueble no encontrado.";
                 return RedirectToAction("Index");
             }
-            ViewBag.Propietarios = repo.ObtenerTodosPropietarios();
+
             return View(inmueble);
         }
     }
@@ -88,10 +88,52 @@ public class InmuebleController : Controller
         return View(inmueble);
     }
     [HttpGet]
-public IActionResult Buscar(string term)
-{
-    
-    var resultados = repo.BuscarPorDireccion(term ?? "");
-    return Json(resultados);
-}
+    public IActionResult Buscar(string term)
+    {
+
+        var resultados = repo.BuscarPorDireccion(term ?? "");
+        return Json(resultados);
+    }
+    public IActionResult Desactivar(int id)
+    {
+        if (id == 0)
+        {
+            TempData["Mensaje"] = "Inmueble no encontrado.";
+            return RedirectToAction("Index");
+        }
+        else
+        {
+
+            var inmueble = repo.ObtenerPorID(id);
+            if (inmueble == null)
+            {
+                TempData["Mensaje"] = "Inmueble no encontrado.";
+                return RedirectToAction("Index");
+            }
+            repo.DesactivarInmueble(inmueble.Id_inmueble);
+            TempData["Mensaje"] = "Inmueble desactivado.";
+            return RedirectToAction("Index");
+        }
+    }
+    public IActionResult Activar(int id)
+    {
+        if (id == 0)
+        {
+            TempData["Mensaje"] = "Inmueble no encontrado.";
+            return RedirectToAction("Index");
+        }
+        else
+        {
+
+            var inmueble = repo.ObtenerPorID(id);
+            if (inmueble == null)
+            {
+                TempData["Mensaje"] = "Inmueble no encontrado.";
+                return RedirectToAction("Index");
+            }
+            repo.ActivarInmueble(inmueble.Id_inmueble);
+            TempData["Mensaje"] = "Inmueble activar.";
+            return RedirectToAction("Index");
+        }
+    }
 }

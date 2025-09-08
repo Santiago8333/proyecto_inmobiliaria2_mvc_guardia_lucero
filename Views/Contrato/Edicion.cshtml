@@ -23,7 +23,7 @@
         <div class="mb-3">
             <label for="InputDireccionInmueble" class="form-label">Direccion Inmueble</label>
             <input class="form-control" list="inmuebleList" id="InputDireccionInmueble" 
-                   name="DireccionInmueble" value="@Model.DireccionInmueble required>
+                   name="DireccionInmueble" value="@Model.DireccionInmueble" required>
             <datalist id="inmuebleList"></datalist>
             <input type="hidden" id="Id_inmueble" name="Id_inmueble" value="@Model.Id_inmueble">
             <div class="invalid-feedback">La dirección del inmueble es obligatoria.</div>
@@ -60,7 +60,7 @@
         <!-- Monto total -->
         <div class="mb-3">
             <label for="Monto_total" class="form-label">Monto Total</label>
-            <input type="number" class="form-control" id="Monto_total" 
+            <input type="text" class="form-control" id="Monto_total" 
                    name="Monto_total" value="@Model.Monto_total" readonly>
         </div>
 
@@ -119,4 +119,36 @@ inputInmueble.addEventListener("change", function() {
     const option = Array.from(listInmuebles.options).find(opt => opt.value === inputInmueble.value);
     hiddenInmueble.value = option ? option.dataset.id : "";
 });
+//logica contrato
+    // Escuchar cambios en meses y en fecha desde
+    document.getElementById('Meses').addEventListener('input', calcularFechaHastaYMontoTotal);
+    document.getElementById('Fecha_desde').addEventListener('change', calcularFechaHastaYMontoTotal);
+    document.getElementById('InputMonto').addEventListener('input', calcularFechaHastaYMontoTotal);
+
+    function calcularFechaHastaYMontoTotal() {
+        var fechaInicio = document.getElementById('Fecha_desde').value;
+        var meses = parseInt(document.getElementById('Meses').value);
+        var montoMensual = parseFloat(document.getElementById('InputMonto').value);
+
+        if (fechaInicio && meses > 0 && !isNaN(montoMensual)) {
+            var fechaObj = new Date(fechaInicio);
+
+            // Calcular nueva fecha sumando meses
+            fechaObj.setMonth(fechaObj.getMonth() + meses);
+
+            var year = fechaObj.getFullYear();
+            var month = ('0' + (fechaObj.getMonth() + 1)).slice(-2);
+            var day = ('0' + fechaObj.getDate()).slice(-2);
+
+            var fechaHastaFormateada = `${year}-${month}-${day}`;
+            document.getElementById('Fecha_hasta').value = fechaHastaFormateada;
+
+            // Calcular monto total
+            var montoTotal = meses * montoMensual;
+            document.getElementById('Monto_total').value = montoTotal;
+        } else {
+            document.getElementById('Fecha_hasta').value = '';
+            document.getElementById('Monto_total').value = '';
+        }
+    }
 </script>

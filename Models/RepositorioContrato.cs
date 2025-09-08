@@ -111,26 +111,33 @@ public class RepositorioContrato : RepositorioBase
             }
         }
     }
-        public Contratos? BuscarPorId(int id)
+public Contratos? BuscarPorId(int id)
 {
     Contratos? contrato = null;
 
     using (MySqlConnection connection = new MySqlConnection(ConectionString))
     {
-        var query = $@"
+        var query = @"
             SELECT 
-                {nameof(Contratos.Id_contrato)},
-                {nameof(Contratos.Id_inquilino)},
-                {nameof(Contratos.Id_inmueble)},
-                {nameof(Contratos.Monto)},
-                {nameof(Contratos.Monto_total)},
-                {nameof(Contratos.Monto_a_pagar)},
-                {nameof(Contratos.Fecha_desde)},
-                {nameof(Contratos.Fecha_hasta)},
-                {nameof(Contratos.Fecha_final)},
-                {nameof(Contratos.Meses)}
-            FROM contratos
-            WHERE {nameof(Contratos.Id_contrato)} = @Id";
+                c.Id_contrato,
+                c.Id_inquilino,
+                c.Id_inmueble,
+                c.Monto,
+                c.Monto_total,
+                c.Monto_a_pagar,
+                c.Fecha_desde,
+                c.Fecha_hasta,
+                c.Fecha_final,
+                c.Meses,
+                c.Estado,
+                c.Contrato_completado,
+                c.Fecha_creacion,
+                i.Email AS EmailInquilino,
+                m.Direccion AS DireccionInmueble
+            FROM contratos c
+            INNER JOIN inquilinos i ON c.Id_inquilino = i.Id_inquilino
+            INNER JOIN inmuebles m ON c.Id_inmueble = m.Id_inmueble
+            WHERE c.Id_contrato = @Id";
 
         using (MySqlCommand command = new MySqlCommand(query, connection))
         {
@@ -143,18 +150,25 @@ public class RepositorioContrato : RepositorioBase
                 {
                     contrato = new Contratos
                     {
-                        Id_contrato   = reader.GetInt32(nameof(Contratos.Id_contrato)),
-                        Id_inquilino  = reader.GetInt32(nameof(Contratos.Id_inquilino)),
-                        Id_inmueble   = reader.GetInt32(nameof(Contratos.Id_inmueble)),
-                        Monto         = reader.GetDecimal(nameof(Contratos.Monto)),
-                        Monto_total   = reader.GetDecimal(nameof(Contratos.Monto_total)),
-                        Monto_a_pagar = reader.GetDecimal(nameof(Contratos.Monto_a_pagar)),
-                        Fecha_desde   = reader.GetDateTime(nameof(Contratos.Fecha_desde)),
-                        Fecha_hasta   = reader.GetDateTime(nameof(Contratos.Fecha_hasta)),
+                        Id_contrato = reader.GetInt32("Id_contrato"),
+                        Id_inquilino = reader.GetInt32("Id_inquilino"),
+                        Id_inmueble = reader.GetInt32("Id_inmueble"),
+                        Monto = reader.GetDecimal("Monto"),
+                        Monto_total = reader.GetDecimal("Monto_total"),
+                        Monto_a_pagar = reader.GetDecimal("Monto_a_pagar"),
+                        Fecha_desde = reader.GetDateTime("Fecha_desde"),
+                        Fecha_hasta = reader.GetDateTime("Fecha_hasta"),
                         Fecha_final = reader.IsDBNull(reader.GetOrdinal("Fecha_final"))
                                     ? (DateTime?)null
                                     : reader.GetDateTime("Fecha_final"),
-                        Meses  = reader.GetInt32(nameof(Contratos.Meses))
+                        Meses = reader.GetInt32("Meses"),
+                        Estado = reader.GetBoolean("Estado"),
+                        Contrato_completado = reader.GetBoolean("Contrato_completado"),
+                        Fecha_creacion = reader.GetDateTime("Fecha_creacion"),
+
+                        // Campos extras traídos con JOIN
+                        EmailInquilino = reader.GetString("EmailInquilino"),
+                        DireccionInmueble = reader.GetString("DireccionInmueble")
                     };
                 }
             }
