@@ -26,7 +26,8 @@ public class RepositorioInmueble : RepositorioBase
                             i.Longitud,
                             i.Latitud,
                             i.Fecha_creacion,
-                            i.Estado
+                            i.Estado,
+                            i.PortadaFile
                         FROM inmuebles i
                         JOIN propietarios p ON i.Id_propietario = p.Id_propietario
                         ORDER BY i.Id_inmueble
@@ -54,6 +55,7 @@ public class RepositorioInmueble : RepositorioBase
                         Longitud = reader.GetDouble(nameof(Inmuebles.Longitud)),
                         Latitud = reader.GetDouble(nameof(Inmuebles.Latitud)),
                         Fecha_creacion = reader.GetDateTime(nameof(Inmuebles.Fecha_creacion)),
+                        PortadaFile = reader.GetString(nameof(Inmuebles.PortadaFile)),
                         Estado = reader.GetBoolean(nameof(Inmuebles.Estado))
                     });
                 }
@@ -161,6 +163,7 @@ public class RepositorioInmueble : RepositorioBase
                    i.{nameof(Inmuebles.Longitud)},
                    i.{nameof(Inmuebles.Latitud)},
                    i.{nameof(Inmuebles.Estado)},
+                   i.{nameof(Inmuebles.PortadaFile)},
                    p.Email AS EmailPropietario
             FROM inmuebles i
             JOIN propietarios p ON i.Id_propietario = p.Id_propietario
@@ -189,6 +192,7 @@ public class RepositorioInmueble : RepositorioBase
                             Longitud = reader.GetDouble(nameof(Inmuebles.Longitud)),
                             Latitud = reader.GetDouble(nameof(Inmuebles.Latitud)),
                             Estado = reader.GetBoolean(nameof(Inmuebles.Estado)),
+                            PortadaFile = reader.GetString(nameof(Inmuebles.PortadaFile)),
                             EmailPropietario = reader.GetString("EmailPropietario")
                         };
                     }

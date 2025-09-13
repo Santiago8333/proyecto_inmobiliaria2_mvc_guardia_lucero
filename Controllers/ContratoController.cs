@@ -27,6 +27,17 @@ public class ContratoController : Controller
     [HttpPost]
     public ActionResult Agregar(Contratos contrato)
     {
+        if (!ModelState.IsValid)
+        {
+            foreach (var key in ModelState.Keys)
+            {
+                var state = ModelState[key];
+                foreach (var error in state.Errors)
+                {
+                    Console.WriteLine($"Error en '{key}': {error.ErrorMessage}");
+                }
+            }
+        }
         if (ModelState.IsValid)
         {
 
@@ -37,7 +48,7 @@ public class ContratoController : Controller
 
         }
         TempData["Mensaje"] = "Error al agregar.";
-        return View(contrato);
+        return RedirectToAction("Index");
     }
 
     public IActionResult Eliminar(int id)

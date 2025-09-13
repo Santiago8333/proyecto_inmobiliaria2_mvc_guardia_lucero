@@ -160,8 +160,8 @@ else
         <div class="invalid-feedback">Ingrese un Meses hasta válido.</div>
     </div>
     <div class="mb-3">
-            <label for="exampleInputMonto" class="form-label">Monto mensual</label>
-            <input type="text" class="form-control" id="exampleInputMonto"  name="Monto"  readonly>
+            <label for="exampleInputMonto_a_pagar" class="form-label">Monto mensual</label>
+            <input type="text" class="form-control" id="exampleInputMonto_a_pagar"  name="Monto_a_pagar"  readonly>
         </div>
          <div class="mt-3">
               <label for="exampleInputMonto_total" class="form-label">Monto Total</label>
@@ -240,7 +240,6 @@ inputEmail.addEventListener("input", function () {
         fetch(`/Inquilino/Buscar?term=${encodeURIComponent(inputEmail.value)}`)
             .then(res => res.json())
             .then(data => {
-                // Limpio datalist
                 dataList.innerHTML = "";
 
                 data.forEach(p => {
@@ -249,18 +248,21 @@ inputEmail.addEventListener("input", function () {
                     option.dataset.id = p.id_inquilino;
                     dataList.appendChild(option);
                 });
+
+                // solo después de llenar el datalist, seteo el hidden
+                const option = Array.from(dataList.options).find(opt => opt.value === inputEmail.value);
+                hiddenId.value = option ? option.dataset.id : "";
             });
-    }, 300); // debounce 300ms
+    }, 300);
 });
 
 inputEmail.addEventListener("change", function () {
     const option = Array.from(dataList.options).find(opt => opt.value === inputEmail.value);
-    if (option) {
-        hiddenId.value = option.dataset.id;
-    } else {
-        hiddenId.value = "";
-    }
+    hiddenId.value = option ? option.dataset.id : "";
 });
+
+// =====================================================
+
 const inputDireccion = document.getElementById("InputDireccionInmueble");
 const hiddenId2 = document.getElementById("Id_inmueble");
 const dataList2 = document.getElementById("inmuebleList");
@@ -273,26 +275,25 @@ inputDireccion.addEventListener("input", function () {
         fetch(`/Inmueble/Buscar?term=${encodeURIComponent(inputDireccion.value)}`)
             .then(res => res.json())
             .then(data => {
-                // Limpio datalist
                 dataList2.innerHTML = "";
 
                 data.forEach(p => {
                     let option = document.createElement("option");
-                    option.value = p.direccion; // lo que se muestra en la lista
-                    option.dataset.id = p.id_inmueble; // asegurate que coincida con tu modelo
+                    option.value = p.direccion;
+                    option.dataset.id = p.id_inmueble;
                     dataList2.appendChild(option);
                 });
+
+                // solo después de llenar el datalist, seteo el hidden
+                const option = Array.from(dataList2.options).find(opt => opt.value === inputDireccion.value);
+                hiddenId2.value = option ? option.dataset.id : "";
             });
-    }, 500); // espera medio segundo
+    }, 500);
 });
 
 inputDireccion.addEventListener("change", function () {
     const option = Array.from(dataList2.options).find(opt => opt.value === inputDireccion.value);
-    if (option) {
-        hiddenId2.value = option.dataset.id;
-    } else {
-        hiddenId2.value = "";
-    }
+    hiddenId2.value = option ? option.dataset.id : "";
 });
 //logica contrato
     // Escuchar cambios en meses y en fecha desde
@@ -323,11 +324,11 @@ inputDireccion.addEventListener("change", function () {
             document.getElementById('exampleInputMonto_total').value = montoTotal;
 
             // Mostrar monto mensual (por si quieres recalcular)
-            document.getElementById('exampleInputMonto').value = montoMensual;
+            document.getElementById('exampleInputMonto_a_pagar').value = montoMensual;
         } else {
             document.getElementById('exampleInputFecha_hasta').value = '';
             document.getElementById('exampleInputMonto_total').value = '';
-            document.getElementById('exampleInputMonto').value = '';
+            document.getElementById('exampleInputMonto_a_pagar').value = '';
         }
     }
 </script>
