@@ -9,7 +9,7 @@
 <div class="container mt-5" style="padding-top: 10px;">
     <h1>Editar Inmuebles</h1>
 
-    <form asp-action="Actualizar" method="post" class="needs-validation" novalidate>
+    <form asp-action="Actualizar" method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
         <div class="row">
             <div class="col-md-6">
                 <label for="InputEmailPropietario" class="form-label">Email Propietario</label>
@@ -87,6 +87,23 @@
                 <label for="InputDireccion" class="form-label">Direccion del Inmueble</label>
                 <input type="text" class="form-control" id="InputDireccion" name="Direccion" value="@Model.Direccion" required>
                 <div class="invalid-feedback">El Direccion es obligatorio.</div>
+            </div>
+            <div class="col-md-6">
+                @if (!string.IsNullOrEmpty(Model.Portada))
+                {
+                    <label for="Imagen" class="form-label">Imagen guardada:</label>
+                    <img src="~/images/inmuebles/@Model.Portada" alt="Portada" width="170" height="120" style="object-fit:cover;" />
+                }
+                else
+                {
+                    <span>No hay imagen guardada</span>
+                    <img src="~/images/inmuebles/404.png" alt="Portada" width="170" height="120" style="object-fit:cover;" />
+                }
+            </div>
+            <div class="col-md-6">
+                <label for="InputPortada" class="form-label">Portada del Inmueble</label>
+                <input type="file" class="form-control" id="InputPortada" name="PortadaFile" accept="image/*">
+                <div class="invalid-feedback">La portada es obligatoria.</div>
             </div>
             <!-- Botones alineados -->
             <div class="col-md-12 mt-3 d-flex justify-content-between">

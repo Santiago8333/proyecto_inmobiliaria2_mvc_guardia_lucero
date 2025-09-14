@@ -38,6 +38,18 @@
         <input type="text" class="form-control" id="Latitud" name="Latitud" value="@Model.Latitud" readonly/>
     </div>
     <div class="mb-3">
+        @if (!string.IsNullOrEmpty(Model.Portada))
+            {
+                <label for="Imagen" class="form-label">Imagen:</label>
+                <img src="~/images/inmuebles/@Model.Portada" alt="Portada" width="200" height="150" style="object-fit:cover;" />
+            }
+        else
+        {
+            <span>Sin imagen</span>
+            <img src="~/images/inmuebles/404.png" alt="Portada" width="170" height="120" style="object-fit:cover;" />
+        }
+    </div>
+    <div class="mb-3">
     <label for="Estado" class="form-label">Estado</label>
     <input type="text" class="form-control" id="Estado" name="Estado" value="@estadoTexto" readonly/>
     </div>

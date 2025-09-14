@@ -27,7 +27,7 @@ public class RepositorioInmueble : RepositorioBase
                             i.Latitud,
                             i.Fecha_creacion,
                             i.Estado,
-                            i.PortadaFile
+                            i.Portada
                         FROM inmuebles i
                         JOIN propietarios p ON i.Id_propietario = p.Id_propietario
                         ORDER BY i.Id_inmueble
@@ -55,7 +55,7 @@ public class RepositorioInmueble : RepositorioBase
                         Longitud = reader.GetDouble(nameof(Inmuebles.Longitud)),
                         Latitud = reader.GetDouble(nameof(Inmuebles.Latitud)),
                         Fecha_creacion = reader.GetDateTime(nameof(Inmuebles.Fecha_creacion)),
-                        PortadaFile = reader.GetString(nameof(Inmuebles.PortadaFile)),
+                        Portada = reader.GetString(nameof(Inmuebles.Portada)),
                         Estado = reader.GetBoolean(nameof(Inmuebles.Estado))
                     });
                 }
@@ -110,8 +110,8 @@ public class RepositorioInmueble : RepositorioBase
 
         using (MySqlConnection connection = new MySqlConnection(ConectionString))
         {
-            var query = $@"INSERT INTO inmuebles ({nameof(Inmuebles.Id_propietario)}, {nameof(Inmuebles.Uso)}, {nameof(Inmuebles.Tipo)},{nameof(Inmuebles.Direccion)}, {nameof(Inmuebles.Ambiente)}, {nameof(Inmuebles.Precio)}, {nameof(Inmuebles.Longitud)}, {nameof(Inmuebles.Latitud)})
-                    VALUES (@Id_propietario, @Uso, @Tipo,@Direccion,@Ambiente,@Precio,@Longitud,@Latitud)";
+            var query = $@"INSERT INTO inmuebles ({nameof(Inmuebles.Id_propietario)}, {nameof(Inmuebles.Uso)}, {nameof(Inmuebles.Tipo)},{nameof(Inmuebles.Direccion)}, {nameof(Inmuebles.Ambiente)}, {nameof(Inmuebles.Precio)}, {nameof(Inmuebles.Longitud)}, {nameof(Inmuebles.Latitud)},{nameof(Inmuebles.Portada)})
+                    VALUES (@Id_propietario, @Uso, @Tipo,@Direccion,@Ambiente,@Precio,@Longitud,@Latitud,@Portada)";
 
             using (MySqlCommand command = new MySqlCommand(query, connection))
             {
@@ -124,6 +124,7 @@ public class RepositorioInmueble : RepositorioBase
                 command.Parameters.AddWithValue("@Precio", nuevoInmuebles.Precio);
                 command.Parameters.AddWithValue("@Longitud", nuevoInmuebles.Longitud);
                 command.Parameters.AddWithValue("@Latitud", nuevoInmuebles.Latitud);
+                command.Parameters.AddWithValue("@Portada", nuevoInmuebles.Portada);
 
                 connection.Open();
                 command.ExecuteNonQuery(); // Ejecuta la consulta de inserción
@@ -163,7 +164,7 @@ public class RepositorioInmueble : RepositorioBase
                    i.{nameof(Inmuebles.Longitud)},
                    i.{nameof(Inmuebles.Latitud)},
                    i.{nameof(Inmuebles.Estado)},
-                   i.{nameof(Inmuebles.PortadaFile)},
+                   i.{nameof(Inmuebles.Portada)},
                    p.Email AS EmailPropietario
             FROM inmuebles i
             JOIN propietarios p ON i.Id_propietario = p.Id_propietario
@@ -192,7 +193,7 @@ public class RepositorioInmueble : RepositorioBase
                             Longitud = reader.GetDouble(nameof(Inmuebles.Longitud)),
                             Latitud = reader.GetDouble(nameof(Inmuebles.Latitud)),
                             Estado = reader.GetBoolean(nameof(Inmuebles.Estado)),
-                            PortadaFile = reader.GetString(nameof(Inmuebles.PortadaFile)),
+                            Portada = reader.GetString(nameof(Inmuebles.Portada)),
                             EmailPropietario = reader.GetString("EmailPropietario")
                         };
                     }
@@ -215,7 +216,8 @@ public class RepositorioInmueble : RepositorioBase
                    {nameof(Inmuebles.Precio)} = @Precio,
                    {nameof(Inmuebles.Longitud)} = @Longitud,
                    {nameof(Inmuebles.Latitud)} = @Latitud,
-                   {nameof(Inmuebles.Id_propietario)} = @Id_propietario
+                   {nameof(Inmuebles.Id_propietario)} = @Id_propietario,
+                   {nameof(Inmuebles.Portada)} = @Portada
                WHERE Id_inmueble = @Id";
             using (MySqlCommand command = new MySqlCommand(query, connection))
             {
@@ -229,6 +231,7 @@ public class RepositorioInmueble : RepositorioBase
                 command.Parameters.AddWithValue("@Latitud", actualizarPropietario.Latitud);
                 command.Parameters.AddWithValue("@Id_propietario", actualizarPropietario.Id_propietario);
                 command.Parameters.AddWithValue("@Id", actualizarPropietario.Id_inmueble);
+                command.Parameters.AddWithValue("@Portada", actualizarPropietario.Portada);
                 connection.Open();
                 command.ExecuteNonQuery();
                 connection.Close();

@@ -22,21 +22,41 @@ public class InmuebleController : Controller
         ViewBag.PaginaActual = pagina;
         ViewBag.TotalPaginas = (int)Math.Ceiling((double)totalRegistros / tamanoPagina);
         ViewBag.Registros = totalRegistros > 0;
-        ViewBag.Propietarios = repo.ObtenerTodosPropietarios();
         return View(listaInquilinos);
     }
     [HttpPost]
-    public ActionResult Agregar(Inmuebles inmueble)
+public IActionResult Agregar(Inmuebles inmueble)
+{
+    if (ModelState.IsValid)
     {
-        if (ModelState.IsValid)
+        if (inmueble.PortadaFile != null && inmueble.PortadaFile.Length > 0)
         {
-            TempData["Mensaje"] = "Inmuebles agregado exitosamente.";
-            repo.AgregarInmueble(inmueble);
-            return RedirectToAction("Index");
+            var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/inmuebles");
+            if (!Directory.Exists(uploadsFolder))
+            {
+                Directory.CreateDirectory(uploadsFolder);
+            }
+
+            var uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(inmueble.PortadaFile.FileName);
+            var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                inmueble.PortadaFile.CopyTo(stream);
+            }
+
+            inmueble.Portada = uniqueFileName;
         }
-        TempData["Mensaje"] = "Error al agregar.";
+
+        repo.AgregarInmueble(inmueble);
+        TempData["Mensaje"] = "Inmueble agregado exitosamente.";
         return RedirectToAction("Index");
     }
+
+    TempData["Mensaje"] = "Error al agregar el inmueble.";
+    return View(inmueble);
+}
+
     public IActionResult Eliminar(int id)
     {
         var inmueble = repo.ObtenerPorID(id);
@@ -71,17 +91,42 @@ public class InmuebleController : Controller
         }
     }
     [HttpPost]
-    public IActionResult Actualizar(Inmuebles actualizarInmuebles)
+public IActionResult Actualizar(Inmuebles actualizarInmuebles, IFormFile? PortadaFile)
+{
+    if (ModelState.IsValid)
     {
-        if (ModelState.IsValid)
+        if (PortadaFile != null && PortadaFile.Length > 0)
         {
-            repo.ActualizarInmueble(actualizarInmuebles);
-            TempData["Mensaje"] = "Inmueble Modificado correctamente.";
-            return RedirectToAction("Index");
+            // Generar nombre único
+            var fileName = Guid.NewGuid().ToString() + Path.GetExtension(PortadaFile.FileName);
+
+            // Ruta de guardado (ej: wwwroot/images/inmuebles)
+            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/inmuebles", fileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                PortadaFile.CopyTo(stream);
+            }
+
+            // Asigno el nuevo nombre de archivo al modelo
+            actualizarInmuebles.Portada = fileName;
         }
-        TempData["Mensaje"] = "Hubo un error al Modificar el Inmueble.";
+        else
+        {
+         
+            var inmuebleExistente = repo.ObtenerPorID(actualizarInmuebles.Id_inmueble);
+            actualizarInmuebles.Portada = inmuebleExistente.Portada;
+        }
+
+        repo.ActualizarInmueble(actualizarInmuebles);
+        TempData["Mensaje"] = "Inmueble modificado correctamente.";
         return RedirectToAction("Index");
     }
+
+    TempData["Mensaje"] = "Hubo un error al modificar el inmueble.";
+    return RedirectToAction("Index");
+}
+
     public IActionResult Detalle(int id)
     {
         var inmueble = repo.ObtenerPorID(id);

@@ -13,7 +13,8 @@ public class Inmuebles
     public double Longitud { get; set; }
     public double Latitud { get; set; }
     public DateTime Fecha_creacion { get; set; }
-    public string? PortadaFile { get; set; }
+    public string? Portada { get; set; }
+    public IFormFile? PortadaFile { get; set; }
 
     public Boolean Estado { get; set; } 
 
