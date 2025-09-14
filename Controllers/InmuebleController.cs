@@ -95,12 +95,22 @@ public IActionResult Actualizar(Inmuebles actualizarInmuebles, IFormFile? Portad
 {
     if (ModelState.IsValid)
     {
+        var inmuebleExistente = repo.ObtenerPorID(actualizarInmuebles.Id_inmueble);
+
         if (PortadaFile != null && PortadaFile.Length > 0)
         {
-            // Generar nombre único
-            var fileName = Guid.NewGuid().ToString() + Path.GetExtension(PortadaFile.FileName);
+            // Eliminar portada anterior (si existía)
+            if (!string.IsNullOrEmpty(inmuebleExistente.Portada))
+            {
+                var oldFilePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/inmuebles", inmuebleExistente.Portada);
+                if (System.IO.File.Exists(oldFilePath))
+                {
+                    System.IO.File.Delete(oldFilePath);
+                }
+            }
 
-            // Ruta de guardado (ej: wwwroot/images/inmuebles)
+            // Guardar nueva portada
+            var fileName = Guid.NewGuid().ToString() + Path.GetExtension(PortadaFile.FileName);
             var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/inmuebles", fileName);
 
             using (var stream = new FileStream(filePath, FileMode.Create))
@@ -108,13 +118,11 @@ public IActionResult Actualizar(Inmuebles actualizarInmuebles, IFormFile? Portad
                 PortadaFile.CopyTo(stream);
             }
 
-            // Asigno el nuevo nombre de archivo al modelo
             actualizarInmuebles.Portada = fileName;
         }
         else
         {
-         
-            var inmuebleExistente = repo.ObtenerPorID(actualizarInmuebles.Id_inmueble);
+            // Mantener portada actual si no se subió nueva
             actualizarInmuebles.Portada = inmuebleExistente.Portada;
         }
 
