@@ -16,13 +16,13 @@ public class ContratoController : Controller
     }
     public IActionResult Index(int pagina = 1, int tamanoPagina = 5)
     {
-        var listaInquilinos = repo.ObtenerPaginados(pagina, tamanoPagina);
+        var listaContratos = repo.ObtenerPaginados(pagina, tamanoPagina);
 
         int totalRegistros = repo.ContarContrato();
         ViewBag.PaginaActual = pagina;
         ViewBag.TotalPaginas = (int)Math.Ceiling((double)totalRegistros / tamanoPagina);
         ViewBag.Registros = totalRegistros > 0;
-        return View(listaInquilinos);
+        return View(listaContratos);
     }
     [HttpPost]
     public ActionResult Agregar(Contratos contrato)
@@ -88,5 +88,28 @@ public class ContratoController : Controller
 
             return View(contrato);
         }
+    }
+    public IActionResult Pago(int id,int pagina = 1, int tamanoPagina = 5)
+    {
+        if (id == 0)
+        {
+            TempData["Mensaje"] = "Contrato no encontrado.";
+            return RedirectToAction("Index");
+        }
+        var contrato = repo.BuscarPorId(id);
+        if (contrato == null)
+        {
+            TempData["Mensaje"] = "Contrato no encontrado.";
+            return RedirectToAction("Index");
+        }
+                var listaPagos = repo.ObtenerPagosPaginados(id, pagina, tamanoPagina);
+
+                int totalRegistros = repo.ContarPagos(id);
+                ViewBag.PaginaActual = pagina;
+                ViewBag.TotalPaginas = (int)Math.Ceiling((double)totalRegistros / tamanoPagina);
+                ViewBag.Registros = totalRegistros > 0;
+                return View(listaPagos);
+            
+        
     }
 }
