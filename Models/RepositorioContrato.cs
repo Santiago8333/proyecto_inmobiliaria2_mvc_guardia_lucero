@@ -295,5 +295,165 @@ public class RepositorioContrato : RepositorioBase
             }
         }
     }
+    public void AgregarPago(Pagos nuevoPago)
+    {
+
+        using (MySqlConnection connection = new MySqlConnection(ConectionString))
+        {
+            connection.Open();
+
+            using (MySqlTransaction transaction = connection.BeginTransaction())
+            {
+                try
+                {
+
+                    var queryUpdate = @"UPDATE contratos 
+                                        SET Monto_a_pagar = Monto_a_pagar - @Monto 
+                                        WHERE Id_contrato = @Id_contrato";
+
+                    using (MySqlCommand command = new MySqlCommand(queryUpdate, connection, transaction))
+                    {
+                        command.Parameters.AddWithValue("@Monto", nuevoPago.Monto);
+                        command.Parameters.AddWithValue("@Id_contrato", nuevoPago.Id_contrato);
+                        command.ExecuteNonQuery();
+                    }
+
+
+                    var queryInsert = $@"INSERT INTO pagos ({nameof(Pagos.Id_contrato)}, {nameof(Pagos.Detalle)}, {nameof(Pagos.Monto)})
+                                        VALUES (@Id_contrato, @Detalle, @Monto)";
+
+                    using (MySqlCommand command = new MySqlCommand(queryInsert, connection, transaction))
+                    {
+                        command.Parameters.AddWithValue("@Id_contrato", nuevoPago.Id_contrato);
+                        command.Parameters.AddWithValue("@Detalle", nuevoPago.Detalle);
+                        command.Parameters.AddWithValue("@Monto", nuevoPago.Monto);
+                        command.ExecuteNonQuery();
+                    }
+
+                    transaction.Commit();
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    Console.WriteLine(ex.Message);
+                    throw;
+                }
+                finally
+                {
+
+                }
+            }
+        }
+    }
+    public void ActualizarContratoCompletado(int Id)
+    {
+        using (MySqlConnection connection = new MySqlConnection(ConectionString))
+        {
+            var query = @"UPDATE contratos 
+                      SET Contrato_completado = true 
+                      WHERE Id_contrato = @Id_contrato";
+
+            using (MySqlCommand command = new MySqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@Id_contrato", Id);
+
+                connection.Open();
+                command.ExecuteNonQuery();
+                connection.Close();
+            }
+        }
+    }
+
+    public void AnularPago(int Id_pago, int Id_contrato, decimal Monto)
+{
     
+    if (Monto <= 0)
+    {
+     
+        return; 
+    }
+
+    using (MySqlConnection connection = new MySqlConnection(ConectionString))
+    {
+        connection.Open();
+       
+        using (MySqlTransaction transaction = connection.BeginTransaction())
+        {
+            try
+            {
+                var queryPago = @"UPDATE pagos SET Estado = false WHERE Id_pago = @Id_pago";
+                using (MySqlCommand cmdPago = new MySqlCommand(queryPago, connection, transaction))
+                {
+                    cmdPago.Parameters.AddWithValue("@Id_pago", Id_pago);
+                    cmdPago.ExecuteNonQuery();
+                }
+
+               
+                var queryContrato = @"UPDATE contratos 
+                                      SET Monto_a_pagar = Monto_a_pagar + @Monto,
+                                          Contrato_completado = false 
+                                      WHERE Id_contrato = @Id_contrato";
+                using (MySqlCommand cmdContrato = new MySqlCommand(queryContrato, connection, transaction))
+                {
+                    cmdContrato.Parameters.AddWithValue("@Monto", Monto);
+                    cmdContrato.Parameters.AddWithValue("@Id_contrato", Id_contrato);
+                    cmdContrato.ExecuteNonQuery();
+                }
+
+                
+                transaction.Commit();
+            }
+            catch (Exception ex)
+            {
+            
+                transaction.Rollback();
+                System.Diagnostics.Debug.WriteLine(ex.ToString()); 
+                throw; 
+            }
+        }
+    }
+}
+    public Pagos? BuscarPagoPorId(int id)
+    {
+        Pagos? pago = null;
+
+        using (MySqlConnection connection = new MySqlConnection(ConectionString))
+        {
+            var query = @"SELECT
+                            Id_pago,
+                            Id_contrato,
+                            Detalle,
+                            Monto,
+                            Fecha_creacion,
+                            Estado
+                        FROM
+                            pagos
+                        WHERE Id_pago = @Id";
+
+            using (MySqlCommand command = new MySqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@Id", id);
+
+                connection.Open();
+                using (var reader = command.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        pago = new Pagos
+                        {
+                            Id_pago = reader.GetInt32("Id_pago"),
+                            Id_contrato = reader.GetInt32("Id_contrato"),
+                            Detalle = reader.GetString("Detalle"),
+                            Monto = reader.GetDecimal("Monto"),
+                            Fecha_creacion = reader.GetDateTime("Fecha_creacion"),
+                            Estado = reader.GetBoolean("Estado")
+                            
+                        };
+                    }
+                }
+            }
+        }
+
+        return pago;
+    }
 }

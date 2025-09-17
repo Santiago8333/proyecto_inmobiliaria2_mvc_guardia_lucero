@@ -27,17 +27,7 @@ public class ContratoController : Controller
     [HttpPost]
     public ActionResult Agregar(Contratos contrato)
     {
-        if (!ModelState.IsValid)
-        {
-            foreach (var key in ModelState.Keys)
-            {
-                var state = ModelState[key];
-                foreach (var error in state.Errors)
-                {
-                    Console.WriteLine($"Error en '{key}': {error.ErrorMessage}");
-                }
-            }
-        }
+
         if (ModelState.IsValid)
         {
 
@@ -89,7 +79,7 @@ public class ContratoController : Controller
             return View(contrato);
         }
     }
-    public IActionResult Pago(int id,int pagina = 1, int tamanoPagina = 5)
+    public IActionResult Pago(int id, int pagina = 1, int tamanoPagina = 5)
     {
         if (id == 0)
         {
@@ -102,14 +92,59 @@ public class ContratoController : Controller
             TempData["Mensaje"] = "Contrato no encontrado.";
             return RedirectToAction("Index");
         }
-                var listaPagos = repo.ObtenerPagosPaginados(id, pagina, tamanoPagina);
+        var listaPagos = repo.ObtenerPagosPaginados(id, pagina, tamanoPagina);
 
-                int totalRegistros = repo.ContarPagos(id);
-                ViewBag.PaginaActual = pagina;
-                ViewBag.TotalPaginas = (int)Math.Ceiling((double)totalRegistros / tamanoPagina);
-                ViewBag.Registros = totalRegistros > 0;
-                return View(listaPagos);
-            
-        
+        int totalRegistros = repo.ContarPagos(id);
+        ViewBag.PaginaActual = pagina;
+        ViewBag.TotalPaginas = (int)Math.Ceiling((double)totalRegistros / tamanoPagina);
+        ViewBag.Registros = totalRegistros > 0;
+        ViewBag.contrato = contrato;
+        return View(listaPagos);
+
+
+    }
+    [HttpPost]
+    public ActionResult AgregarPago(Pagos pago)
+    {
+
+        if (ModelState.IsValid)
+        {
+            var contrato = repo.BuscarPorId(pago.Id_contrato);
+            if (contrato == null)
+            {
+                TempData["Mensaje"] = "Contrato no encontrado.";
+                return RedirectToAction("Index");
+            }
+            if (contrato.Monto_a_pagar > 0)
+            {
+                if (0 == contrato.Monto_a_pagar - pago.Monto)
+                {
+                    repo.ActualizarContratoCompletado(pago.Id_contrato);
+                }
+                TempData["Mensaje"] = "Pago agregado exitosamente.";
+                repo.AgregarPago(pago);
+                return RedirectToAction("Index");
+            }
+            else
+            {
+                TempData["Mensaje"] = "este contrato ya esta pagado.";
+                return RedirectToAction("Index");
+            }
+        }
+        TempData["Mensaje"] = "Error al agregar.";
+        return RedirectToAction("Index");
+    }
+    [Route("Contrato/AnularPago/{Id_pago}/{Id_contrato}")]
+    public IActionResult AnularPago(int Id_pago,int Id_contrato)
+    {
+        var pago = repo.BuscarPagoPorId(Id_pago);
+        if (pago == null)
+        {
+            TempData["Mensaje"] = "Pago no encontrado.";
+            return RedirectToAction("Index");
+        }
+        repo.AnularPago(Id_pago, Id_contrato, pago.Monto);
+        TempData["Mensaje"] = "Pago Anulado.";
+        return RedirectToAction("Index");
     }
 }
