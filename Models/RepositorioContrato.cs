@@ -365,54 +365,54 @@ public class RepositorioContrato : RepositorioBase
     }
 
     public void AnularPago(int Id_pago, int Id_contrato, decimal Monto)
-{
-    
-    if (Monto <= 0)
     {
-     
-        return; 
-    }
 
-    using (MySqlConnection connection = new MySqlConnection(ConectionString))
-    {
-        connection.Open();
-       
-        using (MySqlTransaction transaction = connection.BeginTransaction())
+        if (Monto <= 0)
         {
-            try
-            {
-                var queryPago = @"UPDATE pagos SET Estado = false WHERE Id_pago = @Id_pago";
-                using (MySqlCommand cmdPago = new MySqlCommand(queryPago, connection, transaction))
-                {
-                    cmdPago.Parameters.AddWithValue("@Id_pago", Id_pago);
-                    cmdPago.ExecuteNonQuery();
-                }
 
-               
-                var queryContrato = @"UPDATE contratos 
+            return;
+        }
+
+        using (MySqlConnection connection = new MySqlConnection(ConectionString))
+        {
+            connection.Open();
+
+            using (MySqlTransaction transaction = connection.BeginTransaction())
+            {
+                try
+                {
+                    var queryPago = @"UPDATE pagos SET Estado = false WHERE Id_pago = @Id_pago";
+                    using (MySqlCommand cmdPago = new MySqlCommand(queryPago, connection, transaction))
+                    {
+                        cmdPago.Parameters.AddWithValue("@Id_pago", Id_pago);
+                        cmdPago.ExecuteNonQuery();
+                    }
+
+
+                    var queryContrato = @"UPDATE contratos 
                                       SET Monto_a_pagar = Monto_a_pagar + @Monto,
                                           Contrato_completado = false 
                                       WHERE Id_contrato = @Id_contrato";
-                using (MySqlCommand cmdContrato = new MySqlCommand(queryContrato, connection, transaction))
-                {
-                    cmdContrato.Parameters.AddWithValue("@Monto", Monto);
-                    cmdContrato.Parameters.AddWithValue("@Id_contrato", Id_contrato);
-                    cmdContrato.ExecuteNonQuery();
-                }
+                    using (MySqlCommand cmdContrato = new MySqlCommand(queryContrato, connection, transaction))
+                    {
+                        cmdContrato.Parameters.AddWithValue("@Monto", Monto);
+                        cmdContrato.Parameters.AddWithValue("@Id_contrato", Id_contrato);
+                        cmdContrato.ExecuteNonQuery();
+                    }
 
-                
-                transaction.Commit();
-            }
-            catch (Exception ex)
-            {
-            
-                transaction.Rollback();
-                System.Diagnostics.Debug.WriteLine(ex.ToString()); 
-                throw; 
+
+                    transaction.Commit();
+                }
+                catch (Exception ex)
+                {
+
+                    transaction.Rollback();
+                    System.Diagnostics.Debug.WriteLine(ex.ToString());
+                    throw;
+                }
             }
         }
     }
-}
     public Pagos? BuscarPagoPorId(int id)
     {
         Pagos? pago = null;
@@ -447,7 +447,7 @@ public class RepositorioContrato : RepositorioBase
                             Monto = reader.GetDecimal("Monto"),
                             Fecha_creacion = reader.GetDateTime("Fecha_creacion"),
                             Estado = reader.GetBoolean("Estado")
-                            
+
                         };
                     }
                 }
@@ -455,5 +455,21 @@ public class RepositorioContrato : RepositorioBase
         }
 
         return pago;
+    }
+    public void EliminarPago(int id)
+    {
+        using (MySqlConnection connection = new MySqlConnection(ConectionString))
+        {
+            var query = $@"DELETE FROM pagos WHERE {nameof(Pagos.Id_pago)} = @Id AND Estado = false";
+
+            using (MySqlCommand command = new MySqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@Id", id);
+
+                connection.Open();
+                command.ExecuteNonQuery();
+                connection.Close();
+            }
+        }
     }
 }

@@ -134,8 +134,8 @@ public class ContratoController : Controller
         TempData["Mensaje"] = "Error al agregar.";
         return RedirectToAction("Index");
     }
-    [Route("Contrato/AnularPago/{Id_pago}/{Id_contrato}")]
-    public IActionResult AnularPago(int Id_pago,int Id_contrato)
+    
+    public IActionResult AnularPago(int Id_pago, int Id_contrato)
     {
         var pago = repo.BuscarPagoPorId(Id_pago);
         if (pago == null)
@@ -146,5 +146,18 @@ public class ContratoController : Controller
         repo.AnularPago(Id_pago, Id_contrato, pago.Monto);
         TempData["Mensaje"] = "Pago Anulado.";
         return RedirectToAction("Index");
+    }
+    public IActionResult EliminarPago(int id)
+    {
+        var pago = repo.BuscarPagoPorId(id);
+        if (pago == null)
+        {
+            TempData["Mensaje"] = "Pago no encontrado.";
+            return RedirectToAction("Index");
+        }
+        repo.EliminarPago(id);
+        TempData["Mensaje"] = "Pago eliminado.";
+        return RedirectToAction("Index");
+
     }
 }
