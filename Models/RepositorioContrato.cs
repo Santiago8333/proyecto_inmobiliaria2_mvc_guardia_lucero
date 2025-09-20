@@ -213,22 +213,50 @@ public class RepositorioContrato : RepositorioBase
             }
         }
     }
-    public void EliminarContrato(int id)
+public void EliminarContrato(int id)
+{
+    using (var connection = new MySqlConnection(ConectionString))
     {
-        using (MySqlConnection connection = new MySqlConnection(ConectionString))
+        connection.Open();
+        using (var transaction = connection.BeginTransaction())
         {
-            var query = $@"DELETE FROM contratos WHERE {nameof(Contratos.Id_contrato)} = @Id";
-
-            using (MySqlCommand command = new MySqlCommand(query, connection))
+            try
             {
-                command.Parameters.AddWithValue("@Id", id);
+                // 1. Eliminar multas asociadas
+                var queryMultas = "DELETE FROM multas WHERE Id_contrato = @Id";
+                using (var cmdMultas = new MySqlCommand(queryMultas, connection, transaction))
+                {
+                    cmdMultas.Parameters.AddWithValue("@Id", id);
+                    cmdMultas.ExecuteNonQuery();
+                }
 
-                connection.Open();
-                command.ExecuteNonQuery();
-                connection.Close();
+                // 2. Eliminar pagos asociados
+                var queryPagos = "DELETE FROM pagos WHERE Id_contrato = @Id";
+                using (var cmdPagos = new MySqlCommand(queryPagos, connection, transaction))
+                {
+                    cmdPagos.Parameters.AddWithValue("@Id", id);
+                    cmdPagos.ExecuteNonQuery();
+                }
+
+                // 3. Finalmente, eliminar el contrato
+                var queryContrato = "DELETE FROM contratos WHERE Id_contrato = @Id";
+                using (var cmdContrato = new MySqlCommand(queryContrato, connection, transaction))
+                {
+                    cmdContrato.Parameters.AddWithValue("@Id", id);
+                    cmdContrato.ExecuteNonQuery();
+                }
+
+                transaction.Commit(); // Confirmar todos los cambios
+            }
+            catch (Exception ex)
+            {
+                transaction.Rollback(); // Deshacer todo si algo falló
+                System.Diagnostics.Debug.WriteLine(ex.ToString());
+                throw;
             }
         }
     }
+}
 
     public List<Pagos> ObtenerPagosPaginados(int id, int pagina, int tamanoPagina)
     {

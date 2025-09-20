@@ -63,6 +63,14 @@
                 <a href="javascript:void(0);" 
                       data-id="@p.Id_contrato" 
                       class="dropdown-item" 
+                      onclick="confirmCancelar(this)">
+                        <i class="fa-solid fa-x"></i> Cancelar
+                  </a>
+            </li>
+            <li>
+                <a href="javascript:void(0);" 
+                      data-id="@p.Id_contrato" 
+                      class="dropdown-item" 
                       onclick="confirmDelete(this)">
                         <i class="fa-solid fa-trash"></i> Eliminar
                   </a>
@@ -206,11 +214,29 @@ else
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        ¿Estás seguro de que deseas eliminar este propietario?
+        ¿Estás seguro de que deseas eliminar este Contrato?
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
         <a id="confirmDeleteButton" href="#" class="btn btn-danger">Eliminar</a>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Modal Cancelar-->
+<div class="modal fade" id="confirmCancelarModal" tabindex="-1" aria-labelledby="confirmCancelarModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="confirmCancelarModalLabel">Confirmar Cancelar</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        ¿Estás seguro de que deseas Cancelar este Contrato?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <a id="confirmCancelarButton" href="#" class="btn btn-danger">Cancelar Contrato</a>
       </div>
     </div>
   </div>
@@ -233,6 +259,13 @@ else
         var url = "@Url.Action("Eliminar", "Contrato")" + "/" + id;
         document.getElementById("confirmDeleteButton").setAttribute("href", url);
         var myModal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
+        myModal.show();
+    }
+    function confirmCancelar(element) {
+        var id = element.getAttribute("data-id");
+        var url = "@Url.Action("Cancelar", "Contrato")" + "/" + id;
+        document.getElementById("confirmCancelarButton").setAttribute("href", url);
+        var myModal = new bootstrap.Modal(document.getElementById('confirmCancelarModal'));
         myModal.show();
     }
 const inputEmail = document.getElementById("InputEmailInquilino");

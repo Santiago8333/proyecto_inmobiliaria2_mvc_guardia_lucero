@@ -43,8 +43,8 @@ public class ContratoController : Controller
 
     public IActionResult Eliminar(int id)
     {
-        var propietario = repo.BuscarPorId(id);
-        if (propietario == null)
+        var contrato = repo.BuscarPorId(id);
+        if (contrato == null)
         {
             TempData["Mensaje"] = "Contrato no encontrado.";
             return RedirectToAction("Index");
@@ -106,37 +106,37 @@ public class ContratoController : Controller
     }
     */
     // Recibimos parámetros para ambas paginaciones, con valores por defecto
-public IActionResult Pago(int id, int paginaPagos = 1, int paginaMultas = 1)
-{
-    var contrato = repo.BuscarPorId(id);
-    if (contrato == null)
+    public IActionResult Pago(int id, int paginaPagos = 1, int paginaMultas = 1)
     {
-        TempData["Mensaje"] = "Contrato no encontrado.";
-        return RedirectToAction("Index");
+        var contrato = repo.BuscarPorId(id);
+        if (contrato == null)
+        {
+            TempData["Mensaje"] = "Contrato no encontrado.";
+            return RedirectToAction("Index");
+        }
+
+        int tamanoPagina = 5;
+
+
+        var viewModel = new ContratoDetalleViewModel
+        {
+            ContratoActual = contrato,
+
+
+            ListaDePagos = repo.ObtenerPagosPaginados(id, paginaPagos, tamanoPagina),
+            PaginaActualPagos = paginaPagos,
+            TotalPaginasPagos = (int)Math.Ceiling((double)repo.ContarPagos(id) / tamanoPagina),
+
+
+            ListaDeMultas = repo.ObtenerMultasPaginados(id, paginaMultas, tamanoPagina),
+            PaginaActualMultas = paginaMultas,
+            TotalPaginasMultas = (int)Math.Ceiling((double)repo.ContarMultas(id) / tamanoPagina)
+        };
+
+
+
+        return View(viewModel);
     }
-
-    int tamanoPagina = 5; 
-
-    
-    var viewModel = new ContratoDetalleViewModel
-    {
-        ContratoActual = contrato,
-        
-        
-        ListaDePagos = repo.ObtenerPagosPaginados(id, paginaPagos, tamanoPagina),
-        PaginaActualPagos = paginaPagos,
-        TotalPaginasPagos = (int)Math.Ceiling((double)repo.ContarPagos(id) / tamanoPagina),
-
-       
-        ListaDeMultas = repo.ObtenerMultasPaginados(id, paginaMultas, tamanoPagina),
-        PaginaActualMultas = paginaMultas,
-        TotalPaginasMultas = (int)Math.Ceiling((double)repo.ContarMultas(id) / tamanoPagina)
-    };
-    
-        
-    
-    return View(viewModel);
-}
     [HttpPost]
     public ActionResult AgregarPago(Pagos pago)
     {
@@ -168,7 +168,7 @@ public IActionResult Pago(int id, int paginaPagos = 1, int paginaMultas = 1)
         TempData["Mensaje"] = "Error al agregar.";
         return RedirectToAction("Index");
     }
-    
+
     public IActionResult AnularPago(int Id_pago, int Id_contrato)
     {
         var pago = repo.BuscarPagoPorId(Id_pago);
@@ -191,6 +191,39 @@ public IActionResult Pago(int id, int paginaPagos = 1, int paginaMultas = 1)
         }
         repo.EliminarPago(id);
         TempData["Mensaje"] = "Pago eliminado.";
+        return RedirectToAction("Index");
+
+    }
+    public IActionResult Cancelar(int id)
+    {
+        var contrato = repo.BuscarPorId(id);
+        if (contrato == null)
+        {
+            TempData["Mensaje"] = "Contrato no encontrado.";
+            return RedirectToAction("Index");
+        }
+        var monto_total = contrato.Monto * contrato.Meses;
+        if (contrato.Monto_a_pagar > (monto_total / 2))
+        {
+            Console.WriteLine("Se pagó menos de la mitad del contrato.");
+        }
+        else
+        {
+            Console.WriteLine("Se pagó más de la mitad del contrato.");
+        }
+        /*
+        if (monto_total < contrato.Monto_a_pagar)
+        {
+            contrato.Meses += 2;
+            contrato.Contrato_completado = false;
+        }
+        else
+        {
+            contrato.Meses += 1;
+            contrato.Contrato_completado = false;
+        }
+*/
+        TempData["Mensaje"] = "Contrato Cancelado.";
         return RedirectToAction("Index");
 
     }
