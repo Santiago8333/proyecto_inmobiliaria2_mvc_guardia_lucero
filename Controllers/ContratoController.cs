@@ -79,6 +79,7 @@ public class ContratoController : Controller
             return View(contrato);
         }
     }
+    /*
     public IActionResult Pago(int id, int pagina = 1, int tamanoPagina = 5)
     {
         if (id == 0)
@@ -103,6 +104,39 @@ public class ContratoController : Controller
 
 
     }
+    */
+    // Recibimos parámetros para ambas paginaciones, con valores por defecto
+public IActionResult Pago(int id, int paginaPagos = 1, int paginaMultas = 1)
+{
+    var contrato = repo.BuscarPorId(id);
+    if (contrato == null)
+    {
+        TempData["Mensaje"] = "Contrato no encontrado.";
+        return RedirectToAction("Index");
+    }
+
+    int tamanoPagina = 5; 
+
+    
+    var viewModel = new ContratoDetalleViewModel
+    {
+        ContratoActual = contrato,
+        
+        
+        ListaDePagos = repo.ObtenerPagosPaginados(id, paginaPagos, tamanoPagina),
+        PaginaActualPagos = paginaPagos,
+        TotalPaginasPagos = (int)Math.Ceiling((double)repo.ContarPagos(id) / tamanoPagina),
+
+       
+        ListaDeMultas = repo.ObtenerMultasPaginados(id, paginaMultas, tamanoPagina),
+        PaginaActualMultas = paginaMultas,
+        TotalPaginasMultas = (int)Math.Ceiling((double)repo.ContarMultas(id) / tamanoPagina)
+    };
+    
+        
+    
+    return View(viewModel);
+}
     [HttpPost]
     public ActionResult AgregarPago(Pagos pago)
     {

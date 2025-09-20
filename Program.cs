@@ -4,6 +4,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddScoped<RepositorioPropietario>();
 builder.Services.AddScoped<RepositorioInmueble>();
 builder.Services.AddScoped<RepositorioContrato>();
+builder.Services.AddScoped<ContratoDetalleViewModel>();
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 

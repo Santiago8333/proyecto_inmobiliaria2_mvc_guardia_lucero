@@ -1,4 +1,4 @@
-@model List<proyecto_inmobiliaria2_mvc_guardia_lucero.Models.Pagos>
+@model proyecto_inmobiliaria2_mvc_guardia_lucero.Models.ContratoDetalleViewModel
 @{
     ViewData["Title"] = "Pagos Asocaidos al Contratos";
 }
@@ -17,10 +17,10 @@
     </tr>
   </thead>
   <tbody>
-    @if (Model != null && Model.Any())
+    @if (Model.ListaDePagos != null && Model.ListaDePagos.Any())
 {
     int i = 1;
-    foreach (var p in Model)
+    foreach (var p in Model.ListaDePagos)
     {
       if(p.Estado){
         <tr>
@@ -88,42 +88,55 @@ else
 <!-- Button trigger modal -->
 <button type="button" class="btn btn-primary agregar" data-bs-toggle="modal" data-bs-target="#agregarModal"><i class="fa-solid fa-plus"></i></button>
 <div class="mb-3 d-flex">
-    <p class="me-3">Monto total: @ViewBag.contrato.Monto_total</p>
-    <p class="me-3">Monto a Pagar: @ViewBag.contrato.Monto_a_pagar</p>
-    <p class="me-3">Fecha Desde: @ViewBag.contrato.Fecha_desde.ToString("dd/MM/yyyy")</p>
-    <p class="me-3">Fecha Hasta: @ViewBag.contrato.Fecha_hasta.ToString("dd/MM/yyyy")</p>
-    <p class="me-3">Contrato Completado: @(ViewBag.contrato.Contrato_completado ? "SI" : "NO")</p>
-    <p class="me-3">Meses: @ViewBag.contrato.Meses</p>
+@if (Model.ContratoActual != null){
+    <p class="me-3">Monto total: @Model.ContratoActual.Monto_total</p>
+    <p class="me-3">Monto a Pagar: @Model.ContratoActual.Monto_a_pagar</p>
+    <p class="me-3">Fecha Desde: @Model.ContratoActual.Fecha_desde.ToString("dd/MM/yyyy")</p>
+    <p class="me-3">Fecha Hasta: @Model.ContratoActual.Fecha_hasta.ToString("dd/MM/yyyy")</p>
+    <p class="me-3">Contrato Completado: @(Model.ContratoActual.Contrato_completado ? "SI" : "NO")</p>
+    <p class="me-3">Meses: @Model.ContratoActual.Meses</p>
+  }
 </div>
 <!-- PAGINACIÓN -->
-<nav aria-label="Page navigation">
-    <ul class="pagination justify-content-center">
-        <!-- Botón Anterior -->
-        <li class="page-item @(ViewBag.PaginaActual == 1 || !ViewBag.Registros ? "disabled" : "")">
-            <a class="page-link" 
-               href="@Url.Action("Index", new { pagina = ViewBag.PaginaActual - 1 })" 
-               tabindex="-1">
-                Anterior
-            </a>
-        </li>
-
-        <!-- Números de página -->
-        @for (int i = 1; i <= ViewBag.TotalPaginas; i++)
-        {
-            <li class="page-item @(i == ViewBag.PaginaActual ? "active" : "")">
-                <a class="page-link" href="@Url.Action("Index", new { pagina = i })">@i</a>
+@if (Model.TotalPaginasPagos > 1)
+{
+    <nav aria-label="Paginación de pagos">
+        <ul class="pagination justify-content-center">
+            <li class="page-item @(Model.PaginaActualPagos == 1 ? "disabled" : "")">
+                <a class="page-link" 
+                   asp-action="Pago"
+                   asp-route-id="@Model.ContratoActual?.Id_contrato"
+                   asp-route-paginaPagos="@(Model.PaginaActualPagos - 1)"
+                   asp-route-paginaMultas="@Model.PaginaActualMultas">
+                    Anterior
+                </a>
             </li>
-        }
 
-        <!-- Botón Siguiente -->
-        <li class="page-item @(ViewBag.PaginaActual == ViewBag.TotalPaginas || !ViewBag.Registros ? "disabled" : "")">
-            <a class="page-link" 
-               href="@Url.Action("Index", new { pagina = ViewBag.PaginaActual + 1 })">
-                Siguiente
-            </a>
-        </li>
-    </ul>
-</nav>
+            @for (int i = 1; i <= Model.TotalPaginasPagos; i++)
+            {
+                <li class="page-item @(i == Model.PaginaActualPagos ? "active" : "")">
+                    <a class="page-link" 
+                       asp-action="Pago"
+                       asp-route-id="@Model.ContratoActual?.Id_contrato"
+                       asp-route-paginaPagos="@i"
+                       asp-route-paginaMultas="@Model.PaginaActualMultas">
+                        @i
+                    </a>
+                </li>
+            }
+
+            <li class="page-item @(Model.PaginaActualPagos == Model.TotalPaginasPagos ? "disabled" : "")">
+                <a class="page-link" 
+                   asp-action="Pago"
+                   asp-route-id="@Model.ContratoActual?.Id_contrato"
+                   asp-route-paginaPagos="@(Model.PaginaActualPagos + 1)"
+                   asp-route-paginaMultas="@Model.PaginaActualMultas">
+                    Siguiente
+                </a>
+            </li>
+        </ul>
+    </nav>
+}
 <!-- Modal -->
 <div class="modal fade" id="agregarModal" tabindex="-1" aria-labelledby="agregarModalLabel" aria-hidden="true">
   <div class="modal-dialog">
@@ -137,12 +150,12 @@ else
     <div class="mb-3">
         <label for="InputDetalle" class="form-label">Detalle</label>
         <input type="text" class="form-control" id="InputDetalle" name="Detalle" required>
-          <input type="hidden" id="Id_contrato" name="Id_contrato" value="@ViewBag.contrato.Id_contrato" />
+          <input type="hidden" id="Id_contrato" name="Id_contrato" value="@Model.ContratoActual?.Id_contrato" />
         <div class="invalid-feedback">El Detalle del pago es obligatorio.</div>
     </div>
     <div class="mb-3">
         <label for="InputMonto" class="form-label">Monto</label>
-        <input type="text" class="form-control" id="InputMonto" name="Monto" value="@(ViewBag.contrato.Monto)" readonly required>
+        <input type="text" class="form-control" id="InputMonto" name="Monto" value="@(Model.ContratoActual?.Monto)" readonly required>
         <div class="invalid-feedback">El Monto del pago es obligatorio.</div>
     </div>
   
@@ -206,13 +219,81 @@ else
     </tr>
   </thead>
   <tbody>
+@if (Model.ListaDeMultas != null && Model.ListaDeMultas.Any())
+{
+    int i = 1;
+    foreach (var p in Model.ListaDeMultas)
+    {
+ <tr>
+            <td>@i</td>
+            <td>@Html.DisplayFor(modelp => p.Razon_multa)</td>
+            <td>@Html.DisplayFor(modelp => p.Monto)</td>
+            <td>@p.Fecha.ToString("dd/MM/yyyy")</td>
+            <td>
+            <div class="dropdown position-static">
+                <button class="btn btn-sm btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-three-dots-vertical"></i> <!-- Icono de 3 puntos -->
+                </button>
+                <ul class="dropdown-menu">
+                    <li>
+                        
+                    </li>
+                </ul>
+            </div>
+        </td>
+                </tr>
+        i++;
 
+    }
+
+}
   </tbody>
 </table>
+@if (Model.TotalPaginasMultas > 1)
+{
+    <nav aria-label="Paginación de multas">
+        <ul class="pagination justify-content-center">
+            
+            <li class="page-item @(Model.PaginaActualMultas == 1 ? "disabled" : "")">
+                <a class="page-link" 
+                   asp-action="Pago"
+                   asp-route-id="@Model.ContratoActual?.Id_contrato"
+                   asp-route-paginaPagos="@Model.PaginaActualPagos"
+                   asp-route-paginaMultas="@(Model.PaginaActualMultas - 1)">
+                    Anterior
+                </a>
+            </li>
+
+            @for (int i = 1; i <= Model.TotalPaginasMultas; i++)
+            {
+                <li class="page-item @(i == Model.PaginaActualMultas ? "active" : "")">
+                    <a class="page-link" 
+                       asp-action="Pago"
+                       asp-route-id="@Model.ContratoActual?.Id_contrato"
+                       asp-route-paginaPagos="@Model.PaginaActualPagos"
+                       asp-route-paginaMultas="@i">
+                        @i
+                    </a>
+                </li>
+            }
+
+            <li class="page-item @(Model.PaginaActualMultas == Model.TotalPaginasMultas ? "disabled" : "")">
+                <a class="page-link" 
+                   asp-action="Pago"
+                   asp-route-id="@Model.ContratoActual?.Id_contrato"
+                   asp-route-paginaPagos="@Model.PaginaActualPagos"
+                   asp-route-paginaMultas="@(Model.PaginaActualMultas + 1)">
+                    Siguiente
+                </a>
+            </li>
+            
+        </ul>
+    </nav>
+}
 <script>
 function confirmDelete(element) {
     var Id_pago = element.getAttribute("data-id");
-    var Id_contrato = @ViewBag.contrato.Id_contrato;
+    var Id_contrato = @Model.ContratoActual?.Id_contrato;
     var url = `@Url.Action("AnularPago", "Contrato")?Id_pago=${Id_pago}&Id_contrato=${Id_contrato}`;
     document.getElementById("confirmDeleteButton").setAttribute("href", url);
     var myModal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
@@ -220,7 +301,7 @@ function confirmDelete(element) {
 }
 function confirmDeleteD(element) {
     var Id_pago = element.getAttribute("data-id");
-    var Id_contrato = @ViewBag.contrato.Id_contrato;
+    var Id_contrato = @Model.ContratoActual?.Id_contrato;
     var url = "@Url.Action("EliminarPago", "Contrato")" + "/" + Id_pago;
     document.getElementById("confirmDelete2Button").setAttribute("href", url);
     var myModal = new bootstrap.Modal(document.getElementById('confirmDelete2Modal'));

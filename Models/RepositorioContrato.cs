@@ -249,9 +249,7 @@ public class RepositorioContrato : RepositorioBase
                             ON p.Id_contrato = c.Id_contrato
                         WHERE
                             c.Id_contrato = @id
-                        ORDER BY
-                            c.Id_contrato,
-                            p.Fecha_creacion
+                        ORDER BY p.Fecha_creacion DESC
                         LIMIT @limit OFFSET @offset;";
 
             using (MySqlCommand command = new MySqlCommand(query, connection))
@@ -472,4 +470,65 @@ public class RepositorioContrato : RepositorioBase
             }
         }
     }
+    public List<Multas> ObtenerMultasPaginados(int idContrato, int pagina, int tamanoPagina)
+    {
+        List<Multas> multas = new List<Multas>();
+        using (MySqlConnection connection = new MySqlConnection(ConectionString))
+        {
+            
+            var query = @"SELECT
+                        m.Id_multa,
+                        m.Id_contrato,
+                        m.Razon_multa,
+                        m.Monto,
+                        m.Fecha
+                    FROM multas m
+                    WHERE m.Id_contrato = @idContrato
+                    ORDER BY m.Fecha DESC -- Ordenamos por fecha, de más nueva a más vieja
+                    LIMIT @limit OFFSET @offset;";
+
+            using (MySqlCommand command = new MySqlCommand(query, connection))
+            {
+                int offset = (pagina - 1) * tamanoPagina;
+                command.Parameters.AddWithValue("@idContrato", idContrato);
+                command.Parameters.AddWithValue("@limit", tamanoPagina);
+                command.Parameters.AddWithValue("@offset", offset);
+
+                connection.Open();
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                       
+                        multas.Add(new Multas
+                        {
+                            Id_multa = reader.GetInt32("Id_multa"),
+                            Id_contrato = reader.GetInt32("Id_contrato"),
+                            Razon_multa = reader.GetString("Razon_multa"),
+                            Monto = reader.GetDecimal("Monto"),
+                            Fecha = reader.GetDateTime("Fecha")
+                        });
+                    }
+                }
+            }
+        }
+        return multas;
+    }
+public int ContarMultas(int idContrato)
+{
+    using (var connection = new MySqlConnection(ConectionString))
+    {
+        
+        var query = "SELECT COUNT(*) FROM multas WHERE Id_contrato = @idContrato";
+        
+        using (var command = new MySqlCommand(query, connection))
+        {
+            command.Parameters.AddWithValue("@idContrato", idContrato);
+            connection.Open();
+            
+            
+            return Convert.ToInt32(command.ExecuteScalar());
+        }
+    }
+}
 }
