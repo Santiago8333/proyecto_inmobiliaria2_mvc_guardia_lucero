@@ -559,32 +559,67 @@ public void EliminarContrato(int id)
             }
         }
     }
-public void AnularContrato(Contratos contrato)
+public void AnularContrato(Contratos contrato, Multas multa)
 {
+    
     using (MySqlConnection connection = new MySqlConnection(ConectionString))
     {
-        var query = $@"
-        UPDATE contratos SET
-            {nameof(Contratos.Monto_total)} = @Monto_total,
-            {nameof(Contratos.Monto_a_pagar)} = @Monto_a_pagar,
-            {nameof(Contratos.Fecha_final)} = @Fecha_final,
-            {nameof(Contratos.Meses)} = @Meses,
-            {nameof(Contratos.Estado)} = @Estado
-        WHERE {nameof(Contratos.Id_contrato)} = @Id_contrato";
+        connection.Open();
+        
+        MySqlTransaction transaction = connection.BeginTransaction();
 
-        using (MySqlCommand command = new MySqlCommand(query, connection))
+        try
         {
-            command.Parameters.AddWithValue("@Id_contrato", contrato.Id_contrato);
-            command.Parameters.AddWithValue("@Monto_total", contrato.Monto_total);
-            command.Parameters.AddWithValue("@Monto_a_pagar", contrato.Monto_a_pagar);
-            command.Parameters.AddWithValue("@Fecha_final", (object?)contrato.Fecha_final ?? DBNull.Value);
-            command.Parameters.AddWithValue("@Meses", contrato.Meses);
-            command.Parameters.AddWithValue("@Estado", contrato.Estado);
+           
+            var queryContrato = $@"
+                UPDATE contratos SET
+                    {nameof(Contratos.Monto_total)} = @Monto_total,
+                    {nameof(Contratos.Monto_a_pagar)} = @Monto_a_pagar,
+                    {nameof(Contratos.Fecha_final)} = @Fecha_final,
+                    {nameof(Contratos.Meses)} = @Meses,
+                    {nameof(Contratos.Estado)} = @Estado
+                WHERE {nameof(Contratos.Id_contrato)} = @Id_contrato";
 
-            connection.Open();
-            command.ExecuteNonQuery();
-            connection.Close();
+            using (MySqlCommand commandContrato = new MySqlCommand(queryContrato, connection, transaction)) 
+            {
+                commandContrato.Parameters.AddWithValue("@Id_contrato", contrato.Id_contrato);
+                commandContrato.Parameters.AddWithValue("@Monto_total", contrato.Monto_total);
+                commandContrato.Parameters.AddWithValue("@Monto_a_pagar", contrato.Monto_a_pagar);
+                commandContrato.Parameters.AddWithValue("@Fecha_final", (object?)contrato.Fecha_final ?? DBNull.Value);
+                commandContrato.Parameters.AddWithValue("@Meses", contrato.Meses);
+                commandContrato.Parameters.AddWithValue("@Estado", contrato.Estado);
+
+                commandContrato.ExecuteNonQuery();
+            }
+
+           
+            var queryMulta = @"
+                INSERT INTO multas (Id_contrato, Monto, Fecha, Motivo)
+                VALUES (@Id_contrato, @MontoMulta, @FechaMulta, @MotivoMulta)";
+            
+            using (MySqlCommand commandMulta = new MySqlCommand(queryMulta, connection, transaction)) 
+            {
+                
+                commandMulta.Parameters.AddWithValue("@Id_contrato", contrato.Id_contrato);
+                commandMulta.Parameters.AddWithValue("@MontoMulta", multa.Monto);
+                commandMulta.Parameters.AddWithValue("@FechaMulta", multa.Fecha);
+                commandMulta.Parameters.AddWithValue("@MotivoMulta", multa.Razon_multa);
+
+                commandMulta.ExecuteNonQuery();
+            }
+
+
+            transaction.Commit();
         }
+        catch (Exception ex)
+        {
+           
+            transaction.Rollback();
+            Console.WriteLine("Error en la transacción: " + ex.Message);
+          
+            throw;
+        }
+        
     }
 }
 }

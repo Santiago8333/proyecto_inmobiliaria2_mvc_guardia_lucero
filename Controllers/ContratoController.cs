@@ -197,6 +197,7 @@ public class ContratoController : Controller
     public IActionResult Cancelar(int id)
     {
         var contrato = repo.BuscarPorId(id);
+        var multa = new Multas();
         if (contrato == null)
         {
             TempData["Mensaje"] = "Contrato no encontrado.";
@@ -212,8 +213,12 @@ public class ContratoController : Controller
                 contrato.Monto_a_pagar += contrato.Monto * 2;
                 contrato.Monto_total = contrato.Monto * contrato.Meses;
                 contrato.Estado = false;
-                repo.AnularContrato(contrato);
+                //logica multa
+                multa.Monto = contrato.Monto * 2;
+                multa.Razon_multa = "Se pagó menos de la mitad del contrato.";
+                repo.AnularContrato(contrato, multa);
                 TempData["Mensaje"] = "Contrato Cancelado.";
+                return RedirectToAction("Index");
             }
             else
             {
@@ -223,8 +228,12 @@ public class ContratoController : Controller
                 contrato.Monto_a_pagar += contrato.Monto * 1;
                 contrato.Monto_total = contrato.Monto * contrato.Meses;
                 contrato.Estado = false;
-                repo.AnularContrato(contrato);
+                //logica multa
+                multa.Monto = contrato.Monto * 2;
+                multa.Razon_multa = "Se pagó más de la mitad del contrato.";
+                repo.AnularContrato(contrato, multa);
                 TempData["Mensaje"] = "Contrato Cancelado.";
+                return RedirectToAction("Index");
             }
         }
         TempData["Mensaje"] = "Este contrato ya esta Cancelado.";
