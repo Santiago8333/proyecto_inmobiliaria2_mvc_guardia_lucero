@@ -203,27 +203,31 @@ public class ContratoController : Controller
             return RedirectToAction("Index");
         }
         var monto_total = contrato.Monto * contrato.Meses;
-        if (contrato.Monto_a_pagar > (monto_total / 2))
-        {
-            Console.WriteLine("Se pagó menos de la mitad del contrato.");
+        if (contrato.Estado){
+            if (contrato.Monto_a_pagar > (monto_total / 2))
+            {
+                Console.WriteLine("Se pagó menos de la mitad del contrato.");
+                contrato.Meses += 2;
+                contrato.Contrato_completado = false;
+                contrato.Monto_a_pagar += contrato.Monto * 2;
+                contrato.Monto_total = contrato.Monto * contrato.Meses;
+                contrato.Estado = false;
+                repo.AnularContrato(contrato);
+                TempData["Mensaje"] = "Contrato Cancelado.";
+            }
+            else
+            {
+                Console.WriteLine("Se pagó más de la mitad del contrato.");
+                contrato.Meses += 1;
+                contrato.Contrato_completado = false;
+                contrato.Monto_a_pagar += contrato.Monto * 1;
+                contrato.Monto_total = contrato.Monto * contrato.Meses;
+                contrato.Estado = false;
+                repo.AnularContrato(contrato);
+                TempData["Mensaje"] = "Contrato Cancelado.";
+            }
         }
-        else
-        {
-            Console.WriteLine("Se pagó más de la mitad del contrato.");
-        }
-        /*
-        if (monto_total < contrato.Monto_a_pagar)
-        {
-            contrato.Meses += 2;
-            contrato.Contrato_completado = false;
-        }
-        else
-        {
-            contrato.Meses += 1;
-            contrato.Contrato_completado = false;
-        }
-*/
-        TempData["Mensaje"] = "Contrato Cancelado.";
+        TempData["Mensaje"] = "Este contrato ya esta Cancelado.";
         return RedirectToAction("Index");
 
     }

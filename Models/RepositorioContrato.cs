@@ -542,20 +542,48 @@ public void EliminarContrato(int id)
         }
         return multas;
     }
-public int ContarMultas(int idContrato)
-{
-    using (var connection = new MySqlConnection(ConectionString))
+    public int ContarMultas(int idContrato)
     {
-        
-        var query = "SELECT COUNT(*) FROM multas WHERE Id_contrato = @idContrato";
-        
-        using (var command = new MySqlCommand(query, connection))
+        using (var connection = new MySqlConnection(ConectionString))
         {
-            command.Parameters.AddWithValue("@idContrato", idContrato);
+
+            var query = "SELECT COUNT(*) FROM multas WHERE Id_contrato = @idContrato";
+
+            using (var command = new MySqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@idContrato", idContrato);
+                connection.Open();
+
+
+                return Convert.ToInt32(command.ExecuteScalar());
+            }
+        }
+    }
+public void AnularContrato(Contratos contrato)
+{
+    using (MySqlConnection connection = new MySqlConnection(ConectionString))
+    {
+        var query = $@"
+        UPDATE contratos SET
+            {nameof(Contratos.Monto_total)} = @Monto_total,
+            {nameof(Contratos.Monto_a_pagar)} = @Monto_a_pagar,
+            {nameof(Contratos.Fecha_final)} = @Fecha_final,
+            {nameof(Contratos.Meses)} = @Meses,
+            {nameof(Contratos.Estado)} = @Estado
+        WHERE {nameof(Contratos.Id_contrato)} = @Id_contrato";
+
+        using (MySqlCommand command = new MySqlCommand(query, connection))
+        {
+            command.Parameters.AddWithValue("@Id_contrato", contrato.Id_contrato);
+            command.Parameters.AddWithValue("@Monto_total", contrato.Monto_total);
+            command.Parameters.AddWithValue("@Monto_a_pagar", contrato.Monto_a_pagar);
+            command.Parameters.AddWithValue("@Fecha_final", (object?)contrato.Fecha_final ?? DBNull.Value);
+            command.Parameters.AddWithValue("@Meses", contrato.Meses);
+            command.Parameters.AddWithValue("@Estado", contrato.Estado);
+
             connection.Open();
-            
-            
-            return Convert.ToInt32(command.ExecuteScalar());
+            command.ExecuteNonQuery();
+            connection.Close();
         }
     }
 }
