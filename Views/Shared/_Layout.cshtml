@@ -20,21 +20,33 @@
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
+                        @if (!User.Identity.IsAuthenticated)
+                        {   
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Usuario" asp-action="Login">Ingresar</a>
+                        </li>
+                        }
+                        else
+                        {
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
-                        <li class="nav-item"></li>
+                        <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Propietario" asp-action="index">Propietarios</a>
                         </li>
-                        <li class="nav-item"></li>
+                        <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Inquilino" asp-action="index">Inquilinos</a>
                         </li>
-                        <li class="nav-item"></li>
+                        <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Inmueble" asp-action="index">Inmuebles</a>
                         </li>
-                        <li class="nav-item"></li>
+                        <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Contrato" asp-action="index">Contrato</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Usuario" asp-action="index">Usuario</a>
+                        </li>
+                        }
                     </ul>
                 </div>
             </div>
@@ -48,7 +60,7 @@
 
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; 2025 - proyecto_inmobiliaria2_mvc_guardia_lucero - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            &copy; 2025 - Inmobiliaria
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

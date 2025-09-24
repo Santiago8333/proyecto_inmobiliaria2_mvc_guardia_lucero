@@ -594,8 +594,8 @@ public void AnularContrato(Contratos contrato, Multas multa)
 
            
             var queryMulta = @"
-                INSERT INTO multas (Id_contrato, Monto, Fecha, Motivo)
-                VALUES (@Id_contrato, @MontoMulta, @FechaMulta, @MotivoMulta)";
+                INSERT INTO multas (Id_contrato, Monto, Fecha, Razon_multa)
+                VALUES (@Id_contrato, @MontoMulta, @FechaMulta, @Razon_multa)";
             
             using (MySqlCommand commandMulta = new MySqlCommand(queryMulta, connection, transaction)) 
             {
@@ -603,7 +603,7 @@ public void AnularContrato(Contratos contrato, Multas multa)
                 commandMulta.Parameters.AddWithValue("@Id_contrato", contrato.Id_contrato);
                 commandMulta.Parameters.AddWithValue("@MontoMulta", multa.Monto);
                 commandMulta.Parameters.AddWithValue("@FechaMulta", multa.Fecha);
-                commandMulta.Parameters.AddWithValue("@MotivoMulta", multa.Razon_multa);
+                commandMulta.Parameters.AddWithValue("@Razon_multa", multa.Razon_multa);
 
                 commandMulta.ExecuteNonQuery();
             }

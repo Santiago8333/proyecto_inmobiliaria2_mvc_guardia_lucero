@@ -10,6 +10,8 @@ public class Usuarios
     public IFormFile? AvatarFile { get; set; }
     public int Rol { get; set; }
     public string RolNombre { get; set; } = "";
+    public string Clave { get; set; } = "";
     public Boolean Estado { get; set; }
+    public DateTime Fecha_creacion { get; set; }
 
 }
