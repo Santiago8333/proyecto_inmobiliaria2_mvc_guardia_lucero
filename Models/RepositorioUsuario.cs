@@ -14,7 +14,7 @@ public List<Usuarios> ObtenerPaginados(int pagina, int tamanoPagina)
     List<Usuarios> usuarios = new List<Usuarios>();
     using (MySqlConnection connection = new MySqlConnection(ConectionString))
     {
-        var query = @"SELECT Id_usuario, Nombre, Apellido, Email, AvatarUrl, Rol, RolNombre, Estado
+        var query = @"SELECT Id_usuario, Nombre, Apellido, Email, AvatarUrl, Rol, RolNombre,Fecha_creacion, Estado
                 FROM usuarios
                 ORDER BY Id_usuario
                 LIMIT @limit OFFSET @offset";
@@ -35,7 +35,9 @@ public List<Usuarios> ObtenerPaginados(int pagina, int tamanoPagina)
                     Apellido = reader.GetString(nameof(Usuarios.Apellido)),
                     Email = reader.GetString(nameof(Usuarios.Email)),
                     AvatarUrl = reader.GetString(nameof(Usuarios.AvatarUrl)),
-                    Rol = reader.GetInt32(nameof(Usuarios.RolNombre)),
+                    Rol = reader.GetInt32(nameof(Usuarios.Rol)),
+                    RolNombre = reader.GetString(nameof(Usuarios.RolNombre)),
+                    Fecha_creacion = reader.GetDateTime(nameof(Usuarios.Fecha_creacion)),
                     Estado = reader.GetBoolean(nameof(Usuarios.Estado))
                 });
             }
@@ -124,8 +126,110 @@ public void AgregarUsuario(Usuarios nuevoUsuario)
 }
 
 
+        public void ActualizarUsuario(Usuarios actualizarUsuario)
+        {
+            using (MySqlConnection connection = new MySqlConnection(ConectionString))
+            {
+                var query = $@"UPDATE usuarios
+                    SET 
+                        {nameof(Usuarios.Nombre)} = @Nombre, 
+                        {nameof(Usuarios.Apellido)} = @Apellido, 
+                        {nameof(Usuarios.Email)} = @Email, 
+                        {nameof(Usuarios.Rol)} = @Rol, 
+                        {nameof(Usuarios.RolNombre)} = @RolNombre
+                    WHERE Id_usuario = @Id AND Estado = true";
+                using (MySqlCommand command = new MySqlCommand(query, connection))
+                {
 
+                    command.Parameters.AddWithValue("@Id", actualizarUsuario.Id_usuario);
+                    command.Parameters.AddWithValue("@Nombre", actualizarUsuario.Nombre);
+                    command.Parameters.AddWithValue("@Apellido", actualizarUsuario.Apellido);
+                    command.Parameters.AddWithValue("@Email", actualizarUsuario.Email);
+                    command.Parameters.AddWithValue("@Rol", actualizarUsuario.Rol);
+                    command.Parameters.AddWithValue("@RolNombre", actualizarUsuario.RolNombre);
 
+                    connection.Open();
+                    command.ExecuteNonQuery();
+                    connection.Close();
+                }
+            }
+        }
+        public void ActualizarEditarClave(Usuarios actualizarUsuario)
+        {
+            using (MySqlConnection connection = new MySqlConnection(ConectionString))
+            {
+                var query = $@"UPDATE usuarios
+                    SET 
+                        {nameof(Usuarios.Clave)} = @Clave
+                    WHERE Id_usuario = @Id AND Estado = true";
+                using (MySqlCommand command = new MySqlCommand(query, connection))
+                {
+
+                    command.Parameters.AddWithValue("@Id", actualizarUsuario.Id_usuario);
+                    command.Parameters.AddWithValue("@Clave", actualizarUsuario.Clave);
+
+                    connection.Open();
+                    command.ExecuteNonQuery();
+                    connection.Close();
+                }
+            }
+        }
+public void ActualizarEditarAvatar(Usuarios actualizarUsuario)
+{
+using(MySqlConnection connection = new MySqlConnection(ConectionString))
+    {
+        var query = $@"UPDATE usuarios
+                    SET 
+                        {nameof(Usuarios.AvatarUrl)} = @AvatarUrl
+                    WHERE Id_usuario = @Id AND Estado = true";
+         using(MySqlCommand command = new MySqlCommand(query, connection))
+        {
+
+            command.Parameters.AddWithValue("@Id", actualizarUsuario.Id_usuario);
+            command.Parameters.AddWithValue("@AvatarUrl", actualizarUsuario.AvatarUrl);
+
+            connection.Open();
+            command.ExecuteNonQuery(); 
+            connection.Close();
+        }
+    }
+}
+public Usuarios? ObtenerPorID(int id)
+{
+    Usuarios? res = null;
+    using (MySqlConnection connection = new MySqlConnection(ConectionString))
+    {
+        var query = @"SELECT Id_usuario,Apellido, Nombre, Email, Clave,AvatarUrl,Rol,RolNombre,Estado
+                      FROM usuarios
+                      WHERE Id_usuario = @Id AND Estado = 1";
+
+        using (MySqlCommand command = new MySqlCommand(query, connection))
+        {
+            // Agrega el parámetro id
+            command.Parameters.AddWithValue("@Id", id);
+            connection.Open();
+        using (var reader = command.ExecuteReader())
+            {
+                if (reader.Read())
+                {
+                    res = new Usuarios
+                    {
+                        Id_usuario = reader.GetInt32(nameof(Usuarios.Id_usuario)),
+                        Apellido = reader.GetString(nameof(Usuarios.Apellido)),
+                        Nombre = reader.GetString(nameof(Usuarios.Nombre)),
+                        Email = reader.GetString(nameof(Usuarios.Email)),
+                        Clave = reader.GetString(nameof(Usuarios.Clave)),
+                        Rol = reader.GetInt32(nameof(Usuarios.Rol)),
+                        RolNombre = reader.GetString(nameof(Usuarios.RolNombre)),
+                        AvatarUrl = reader.GetString(nameof(Usuarios.AvatarUrl)),
+                        Estado = reader.GetBoolean(reader.GetOrdinal(nameof(Usuarios.Estado)))
+                    };
+                }
+            }
+        }
+    }
+    return res;
+}
 
 
     }
