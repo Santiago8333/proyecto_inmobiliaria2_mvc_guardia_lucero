@@ -6,20 +6,23 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 namespace proyecto_inmobiliaria2_mvc_guardia_lucero.Controllers;
 
+[Authorize]
 public class UsuarioController : Controller
 {
     private readonly RepositorioUsuario repo;
     private readonly IConfiguration config;
-    public UsuarioController(RepositorioUsuario repositorio, IConfiguration config)
+    private readonly IWebHostEnvironment _environment;
+    public UsuarioController(RepositorioUsuario repositorio, IConfiguration config, IWebHostEnvironment environment)
     {
 
         this.repo = repositorio;
         this.config = config;
-        this.config = config;
+        _environment = environment;
     }
-
+    [Authorize(Policy = "Administrador")]
     public IActionResult Index(int pagina = 1, int tamanoPagina = 5)
     {
         var listaUsuarios = repo.ObtenerPaginados(pagina, tamanoPagina);
@@ -30,12 +33,12 @@ public class UsuarioController : Controller
         ViewBag.Registros = totalRegistros > 0;
         return View(listaUsuarios);
     }
-
+    [AllowAnonymous]
     public IActionResult Login()
     {
         return View();
     }
-
+    [AllowAnonymous]
     [HttpPost]
     public async Task<IActionResult> Login(Usuarios loginusuario)
     {
@@ -102,7 +105,7 @@ public class UsuarioController : Controller
         TempData["Mensaje"] = "Error de credenciales";
         return View();
     }
-
+    [Authorize(Policy = "Administrador")]
     public async Task<IActionResult> Agregar(Usuarios nuevoUsuario, IFormFile AvatarFile)
     {
         //verificar si el email ya esta registrado
@@ -166,12 +169,12 @@ public class UsuarioController : Controller
                 }
 
                 Console.WriteLine("Archivo cargado: " + fileName);
-                nuevoUsuario.AvatarUrl = $"/avatars/{newFileName}";
+                nuevoUsuario.AvatarUrl = $"/images/avatars/{newFileName}";
             }
             else
             {
                 Console.WriteLine("No se subió un archivo de avatar.");
-                nuevoUsuario.AvatarUrl = "/avatars/default-avatar.png";  // Asignar avatar por defecto
+                nuevoUsuario.AvatarUrl = "/images/avatars/default-avatar.png";  // Asignar avatar por defecto
             }
 
             repo.AgregarUsuario(nuevoUsuario);
@@ -189,7 +192,7 @@ public class UsuarioController : Controller
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
         return RedirectToAction("Login", "Usuario");
     }
-
+    [Authorize(Policy = "Administrador")]
     public async Task<IActionResult> Actualizar(Usuarios actualizarUsuario)
     {
         if (ModelState.IsValid)
@@ -210,7 +213,7 @@ public class UsuarioController : Controller
                 TempData["Mensaje"] = "Usuario no encontrado.";
                 return RedirectToAction("Index");
             }
-            
+
             //verificar si el email ya esta registrado
             if (usuario.Email == actualizarUsuario.Email)
             {
@@ -229,7 +232,7 @@ public class UsuarioController : Controller
                 }
             }
             repo.ActualizarUsuario(actualizarUsuario);
-            
+
             if (usuario.Email == @User.Identity.Name)
             {
                 actualizarUsuario.AvatarUrl = usuario.AvatarUrl;
@@ -243,8 +246,8 @@ public class UsuarioController : Controller
         TempData["Mensaje"] = "Hubo un error al Modificar el Usuario.";
         return RedirectToAction("Index");
     }
-    
 
+    [Authorize(Policy = "Administrador")]
     public IActionResult Edicion(int id)
     {
         if (id == 0)
@@ -264,6 +267,7 @@ public class UsuarioController : Controller
             return View(usuario);
         }
     }
+    [Authorize(Policy = "Administrador")]
     [HttpPost]
     public IActionResult ActualizarEditarClave(Usuarios actualizarUsuario)
     {
@@ -294,48 +298,61 @@ public class UsuarioController : Controller
         TempData["Mensaje"] = "Hubo un error al Modificar Clave.";
         return RedirectToAction("Index");
     }
+    [Authorize(Policy = "Administrador")]
     [HttpPost]
-    public async Task<IActionResult> ActualizarEditarAvatar(Usuarios actualizarUsuario,IFormFile? AvatarFile)
+    public async Task<IActionResult> ActualizarEditarAvatar(Usuarios actualizarUsuario, IFormFile? AvatarFile)
     {
         if (ModelState.IsValid)
         {
+            var subcarpeta = Path.Combine("images", "avatars");
             var usuario = repo.ObtenerPorID(actualizarUsuario.Id_usuario);
             if (usuario == null)
             {
                 TempData["Mensaje"] = "Usuario no encontrado.";
                 return RedirectToAction("Index");
             }
-            
+
         if (AvatarFile != null && AvatarFile.Length > 0)
         {
-            // Eliminar portada anterior (si existía)
-            if (!string.IsNullOrEmpty(actualizarUsuario.AvatarUrl))
+            var oldAvatarUrl = usuario.AvatarUrl;
+
+           
+            var defaultAvatarPath = $"/{subcarpeta.Replace('\\', '/')}/default-avatar.png"; 
+            if (!string.IsNullOrEmpty(oldAvatarUrl) && oldAvatarUrl != defaultAvatarPath)
             {
-                var oldFilePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/", usuario.AvatarUrl);
-                if (System.IO.File.Exists(oldFilePath) && oldFilePath != "wwwroot/images/avatars/default-avatar.png")
+                var oldFilePath = Path.Combine(_environment.WebRootPath, oldAvatarUrl.TrimStart('/'));
+                if (System.IO.File.Exists(oldFilePath))
                 {
                     System.IO.File.Delete(oldFilePath);
                 }
             }
 
-            // Guardar nueva portada
+          
             var fileName = Guid.NewGuid().ToString() + Path.GetExtension(AvatarFile.FileName);
-            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/avatars", fileName);
+            // Usamos Path.Combine para unir wwwroot + images + avatars + nombre de archivo
+            var filePath = Path.Combine(_environment.WebRootPath, subcarpeta, fileName); 
+
+            // Asegurarse de que el directorio exista
+            var directoryPath = Path.GetDirectoryName(filePath);
+            if (!Directory.Exists(directoryPath))
+            {
+                Directory.CreateDirectory(directoryPath);
+            }
 
             using (var stream = new FileStream(filePath, FileMode.Create))
             {
-                AvatarFile.CopyTo(stream);
+                await AvatarFile.CopyToAsync(stream);
             }
 
-            actualizarUsuario.AvatarUrl = fileName;
+            // 3. Guardamos la URL correcta en la base de datos
+            actualizarUsuario.AvatarUrl = $"/{subcarpeta.Replace('\\', '/')}/{fileName}";
         }
         else
         {
-            // Mantener portada actual si no se subió nueva
             actualizarUsuario.AvatarUrl = usuario.AvatarUrl;
         }
             if (usuario.Email == @User.Identity.Name)
-            { 
+            {
                 actualizarUsuario.Email = usuario.Email;
                 actualizarUsuario.Nombre = usuario.Nombre;
                 actualizarUsuario.Apellido = usuario.Apellido;
@@ -349,8 +366,215 @@ public class UsuarioController : Controller
         TempData["Mensaje"] = "Hubo un error al Modificar Avatar.";
         return RedirectToAction("Index");
     }
-    
-private async Task ActualizarClaimsYReautenticarEdicion(Usuarios usuarioActualizado)
+    [Authorize(Policy = "Administrador")]
+    public IActionResult Eliminar(int id)
+    {
+        var usuario = repo.ObtenerPorID(id);
+        if (usuario == null)
+        {
+            TempData["Mensaje"] = "Usuario no encontrado.";
+            return RedirectToAction("Index");
+        }
+        repo.EliminarUsuario(id);
+        TempData["Mensaje"] = "Usuario eliminado.";
+        return RedirectToAction("Index");
+
+    }
+    public async Task<IActionResult> Perfil()
+    {
+        var email = @User.Identity.Name;
+        if (email == null)
+        {
+            TempData["Mensaje"] = "Usuario no encontrado.";
+            return RedirectToAction("Index");
+        }
+        else
+        {
+            var usuario = await repo.ObtenerPorEmailAsync(email);
+            if (usuario == null)
+            {
+                TempData["Mensaje"] = "Usuario no encontrado.";
+                return RedirectToAction("Index");
+            }
+
+            return View(usuario);
+        }
+    }
+
+    [Authorize]
+    public async Task<IActionResult> ActualizarPerfil(Usuarios actualizarUsuario)
+    {
+        if (ModelState.IsValid)
+        {
+            //verificar contraseña
+            var usuario = repo.ObtenerPorID(actualizarUsuario.Id_usuario);
+            if (usuario == null)
+            {
+                TempData["Mensaje"] = "Usuario no encontrado.";
+                return RedirectToAction("Index");
+            }
+
+            //verificar si el email ya esta registrado
+            if (actualizarUsuario.Email == usuario.Email)
+            {
+                //si no hay cambios en el email no validar 
+            }
+            else
+            {
+                var e = await repo.ObtenerPorEmailAsync(actualizarUsuario.Email);
+                if (e != null)
+                {
+                    if (actualizarUsuario.Email == e.Email)
+                    {
+                        TempData["Mensaje"] = "Error al actualizar: EL email de ese usuario ya esta registrado.";
+                        return RedirectToAction("Perfil");
+                    }
+                }
+            }
+            repo.ActualizarUsuarioPerfil(actualizarUsuario);
+
+            if (usuario.Email == @User.Identity.Name)
+            {
+                actualizarUsuario.AvatarUrl = usuario.AvatarUrl;
+                await ActualizarClaimsYReautenticarEdicion(actualizarUsuario);
+
+            }
+
+            TempData["Mensaje"] = "Usuario Modificado correctamente.";
+            return RedirectToAction("Perfil");
+        }
+        TempData["Mensaje"] = "Hubo un error al Modificar el Usuario.";
+        return RedirectToAction("Perfil");
+    }
+    [Authorize]
+    [HttpPost]
+    public IActionResult ActualizarPerfilClave(Usuarios actualizarUsuario)
+    {
+
+        var usuarioActual = repo.ObtenerPorID(actualizarUsuario.Id_usuario);
+        if (usuarioActual == null)
+        {
+            TempData["Error"] = "Usuario no encontrado.";
+            return RedirectToAction("Index");
+        }
+
+        var salt = System.Text.Encoding.ASCII.GetBytes(config["Salt"]);
+
+
+        string hashedOldPassword = Convert.ToBase64String(KeyDerivation.Pbkdf2(
+            password: actualizarUsuario.OldClave,
+            salt: salt,
+            prf: KeyDerivationPrf.HMACSHA1,
+            iterationCount: 1000,
+            numBytesRequested: 256 / 8));
+
+
+        if (hashedOldPassword != usuarioActual.Clave)
+        {
+            TempData["Mensaje"] = "La clave actual es incorrecta.";
+
+            return RedirectToAction("Perfil");
+        }
+
+
+        if (actualizarUsuario.Clave == actualizarUsuario.OldClave)
+        {
+            TempData["Mensaje"] = "La nueva clave no puede ser igual a la anterior.";
+            return RedirectToAction("Perfil");
+        }
+
+
+        string hashedNewPassword = Convert.ToBase64String(KeyDerivation.Pbkdf2(
+            password: actualizarUsuario.Clave,
+            salt: salt,
+            prf: KeyDerivationPrf.HMACSHA1,
+            iterationCount: 1000,
+            numBytesRequested: 256 / 8));
+
+
+        actualizarUsuario.Clave = hashedNewPassword;
+
+        repo.ActualizarEditarClave(actualizarUsuario);
+        TempData["Mensaje"] = "Clave modificada correctamente.";
+        return RedirectToAction("Perfil");
+    }
+[Authorize]
+[HttpPost]
+public async Task<IActionResult> ActualizarPerfilAvatar(Usuarios actualizarUsuario, IFormFile? AvatarFile)
+{
+    if (ModelState.IsValid)
+    {
+        
+        var subcarpeta = Path.Combine("images", "avatars"); 
+        var usuario = repo.ObtenerPorID(actualizarUsuario.Id_usuario);
+        
+        if (usuario == null)
+        {
+            TempData["Mensaje"] = "Usuario no encontrado.";
+            return RedirectToAction("Perfil");
+        }
+
+        if (AvatarFile != null && AvatarFile.Length > 0)
+        {
+            var oldAvatarUrl = usuario.AvatarUrl;
+
+            
+            var defaultAvatarPath = $"/{subcarpeta.Replace('\\', '/')}/default-avatar.png"; 
+            if (!string.IsNullOrEmpty(oldAvatarUrl) && oldAvatarUrl != defaultAvatarPath)
+            {
+                var oldFilePath = Path.Combine(_environment.WebRootPath, oldAvatarUrl.TrimStart('/'));
+                if (System.IO.File.Exists(oldFilePath))
+                {
+                    System.IO.File.Delete(oldFilePath);
+                }
+            }
+
+            // 2. Guardamos el nuevo archivo en la subcarpeta correcta
+            var fileName = Guid.NewGuid().ToString() + Path.GetExtension(AvatarFile.FileName);
+            // Usamos Path.Combine para unir wwwroot + images + avatars + nombre de archivo
+            var filePath = Path.Combine(_environment.WebRootPath, subcarpeta, fileName); // <-- CORREGIDO
+
+            // Asegurarse de que el directorio exista
+            var directoryPath = Path.GetDirectoryName(filePath);
+            if (!Directory.Exists(directoryPath))
+            {
+                Directory.CreateDirectory(directoryPath);
+            }
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await AvatarFile.CopyToAsync(stream);
+            }
+
+            // 3. Guardamos la URL correcta en la base de datos
+            actualizarUsuario.AvatarUrl = $"/{subcarpeta.Replace('\\', '/')}/{fileName}"; // <-- CORREGIDO
+        }
+        else
+        {
+            actualizarUsuario.AvatarUrl = usuario.AvatarUrl;
+        }
+
+        
+        actualizarUsuario.Email = usuario.Email;
+        actualizarUsuario.Nombre = usuario.Nombre;
+        actualizarUsuario.Apellido = usuario.Apellido;
+        actualizarUsuario.RolNombre = usuario.RolNombre;
+        
+        repo.ActualizarEditarAvatar(actualizarUsuario);
+        
+        if (usuario.Email == User.Identity.Name)
+        {
+            await ActualizarClaimsYReautenticarEdicion(actualizarUsuario);
+        }
+        
+        TempData["Mensaje"] = "Avatar Modificado correctamente.";
+        return RedirectToAction("Perfil");
+    }
+
+    TempData["Mensaje"] = "Hubo un error al Modificar Avatar.";
+    return RedirectToAction("Perfil");
+}
+    private async Task ActualizarClaimsYReautenticarEdicion(Usuarios usuarioActualizado)
     {
         // Crear una lista de claims actualizada
         var AvatarUrl = usuarioActualizado.AvatarUrl;
@@ -377,4 +601,5 @@ private async Task ActualizarClaimsYReautenticarEdicion(Usuarios usuarioActualiz
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
         await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, claimsPrincipal);
     }
+    
 }

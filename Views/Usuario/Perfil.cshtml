@@ -1,12 +1,12 @@
 @model proyecto_inmobiliaria2_mvc_guardia_lucero.Models.Usuarios
 @{
-    ViewData["Title"] = "Usuario Edicion";
+    ViewData["Title"] = "Usuario Perfil";
 }
 
 <div class="container mt-5" style="padding-top: 10px;">
-    <h1>Editar Usuario</h1>
+    <h1>Perfil</h1>
 
-    <form asp-action="Actualizar" method="post" class="needs-validation" novalidate>
+    <form asp-action="ActualizarPerfil" method="post" class="needs-validation" novalidate>
         <div class="row">
             <div class="col-md-6">
                 <label for="Dni" class="form-label">Nombre</label>
@@ -27,20 +27,6 @@
                 <div class="invalid-feedback">Ingrese un email válido.</div>
             </div>
 
-            <div class="col-md-6">
-                <label for="Rol" class="form-label">Rol</label>
-                <select class="form-select" required aria-label="select example" id="Rol" name="Rol">
-                @if(Model.Rol == 2){
-                    <option value="2" select>Empleado</option>
-                    <option value="1">Administrador</option>
-                }else{
-                    <option value="1" select>Administrador</option>
-                    <option value="2">Empleado</option>
-                }
-                </select>
-                <div class="invalid-feedback">El Rol es obligatorio.</div>
-            </div>
-
             <!-- Botones alineados -->
             <div class="col-md-12 mt-3 d-flex justify-content-between">
                 <button type="submit" class="btn btn-primary">Actualizar</button>
@@ -49,12 +35,18 @@
         </div>
     </form>
      <h1>Editar Clave</h1>
-    <form asp-action="ActualizarEditarClave" method="post" class="needs-validation" novalidate>
+    <form asp-action="ActualizarPerfilClave" method="post" class="needs-validation" novalidate>
         <div class="row">
             <div class="col-md-6">
-                <label for="Password" class="form-label">Password</label>
+                <label for="Password" class="form-label">Nueva Contraseña</label>
                 <input type="password" class="form-control" id="Password" name="Clave" required>
                 <div class="invalid-feedback">El Password es obligatorio.</div>
+                <input type="hidden" id="Id_usuario" name="Id_usuario" value="@Model.Id_usuario" required/>
+            </div>
+            <div class="col-md-6">
+                <label for="OldClave" class="form-label">Contraseña Actual</label>
+                <input type="password" class="form-control" id="OldClave" name="OldClave" required>
+                <div class="invalid-feedback">El Contraseña Actual es obligatorio.</div>
                 <input type="hidden" id="Id_usuario" name="Id_usuario" value="@Model.Id_usuario" required/>
             </div>
 
@@ -66,29 +58,29 @@
         </div>
     </form>
      <h1>Editar Avatar</h1>
-     <form asp-action="ActualizarEditarAvatar" method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
-        <div class="row">
-            <div class="col-md-6">
-                <label for="AvatarFile" class="form-label">Avatar</label>
-                @if (!string.IsNullOrEmpty(Model.AvatarUrl))
-                {
-                    <img src="@Model.AvatarUrl" alt="avatar" width="30" height="20" style="object-fit:cover;" />
-                }
-                else
-                {
-                    <span>Sin imagen</span>
-                }
-                <input class="form-control form-control-sm" id="AvatarFile" name="AvatarFile" type="file" >
-                <input type="hidden" id="Id_usuario" name="Id_usuario" value="@Model.Id_usuario" required/>
-            </div>
-
-            <!-- Botones alineados -->
-            <div class="col-md-12 mt-3 d-flex justify-content-between">
-                <button type="submit" class="btn btn-primary">Actualizar</button>
-                <a class="btn btn-secondary" asp-action="Index">Volver</a>
-            </div>
+    <form asp-action="ActualizarPerfilAvatar" method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+    <div class="row">
+        <div class="col-md-6">
+            <label for="AvatarFile" class="form-label">Avatar</label>
+            @if (!string.IsNullOrEmpty(Model.AvatarUrl))
+            {
+                <img src="@Model.AvatarUrl" alt="avatar" width="30" height="20" style="object-fit:cover;" />
+            }
+            else
+            {
+                <span>Sin imagen</span>
+            }
+            <input class="form-control form-control-sm" id="AvatarFile" name="AvatarFile" type="file" >
+            <input type="hidden" id="Id_usuario" name="Id_usuario" value="@Model.Id_usuario" required/>
         </div>
-    </form>
+
+        <!-- Botones alineados -->
+        <div class="col-md-12 mt-3 d-flex justify-content-between">
+            <button type="submit" class="btn btn-primary">Actualizar</button>
+            <a class="btn btn-secondary" asp-action="Index">Volver</a>
+        </div>
+    </div>
+</form>
 </div>
 <div class="toast-container position-fixed bottom-0 end-0 p-3">
   <div id="successToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">

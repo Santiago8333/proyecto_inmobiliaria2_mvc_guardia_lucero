@@ -2,9 +2,9 @@ using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.ObjectPool;
 using proyecto_inmobiliaria2_mvc_guardia_lucero.Models;
-
+using Microsoft.AspNetCore.Authorization;
 namespace proyecto_inmobiliaria2_mvc_guardia_lucero.Controllers;
-
+[Authorize]
 public class InmuebleController : Controller
 {
     private readonly RepositorioInmueble repo;

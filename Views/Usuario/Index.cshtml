@@ -36,7 +36,7 @@
             <td>
             @if (!string.IsNullOrEmpty(p.AvatarUrl))
             {
-                <img src="~/images/@p.AvatarUrl" alt="avatar" width="30" height="20" style="object-fit:cover;" />
+                <img src="@p.AvatarUrl" alt="avatar" width="30" height="20" style="object-fit:cover;" />
             }
             else
             {

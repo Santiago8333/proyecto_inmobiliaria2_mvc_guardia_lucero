@@ -1,17 +1,18 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using proyecto_inmobiliaria2_mvc_guardia_lucero.Models;
-
+using Microsoft.AspNetCore.Authorization;
 namespace proyecto_inmobiliaria2_mvc_guardia_lucero.Controllers;
 
+[Authorize]
 public class PropietarioController : Controller
 {
-    
+
     private readonly RepositorioPropietario repo;
     private readonly IConfiguration config;
     public PropietarioController(RepositorioPropietario repositorio, IConfiguration config)
     {
-        
+
         this.repo = repositorio;
         this.config = config;
     }
@@ -45,7 +46,7 @@ public class PropietarioController : Controller
             else
             {
                 TempData["Mensaje"] = "Propietario agregado exitosamente.";
-               
+
                 repo.AgregarPropietario(propietario);
                 return RedirectToAction("Index");
             }
@@ -86,9 +87,9 @@ public class PropietarioController : Controller
         return RedirectToAction("Index");
     }
 
-public IActionResult Eliminar(int id)
-{
-  var propietario = repo.ObtenerPorID(id);
+    public IActionResult Eliminar(int id)
+    {
+        var propietario = repo.ObtenerPorID(id);
         if (propietario == null)
         {
             TempData["Mensaje"] = "Propietario no encontrado.";
@@ -97,12 +98,12 @@ public IActionResult Eliminar(int id)
         repo.EliminarPropietario(id);
         TempData["Mensaje"] = "Propietario eliminado.";
         return RedirectToAction("Index");
-    
-}
-[HttpGet]
-public IActionResult Buscar(string term)
-{
-    var resultados = repo.BuscarPorEmail(term ?? "");
-    return Json(resultados);
-}
+
+    }
+    [HttpGet]
+    public IActionResult Buscar(string term)
+    {
+        var resultados = repo.BuscarPorEmail(term ?? "");
+        return Json(resultados);
+    }
 }

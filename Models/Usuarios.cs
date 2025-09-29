@@ -11,6 +11,7 @@ public class Usuarios
     public int Rol { get; set; }
     public string RolNombre { get; set; } = "";
     public string Clave { get; set; } = "";
+    public string? OldClave { get; set; } = "";
     public Boolean Estado { get; set; }
     public DateTime Fecha_creacion { get; set; }
 
