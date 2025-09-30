@@ -8,11 +8,13 @@ namespace proyecto_inmobiliaria2_mvc_guardia_lucero.Controllers;
 public class ContratoController : Controller
 {
     private readonly RepositorioContrato repo;
+    private readonly RepositorioInmueble repoInmuebles;
     private readonly IConfiguration config;
-    public ContratoController(RepositorioContrato repositorio, IConfiguration config)
+    public ContratoController(RepositorioContrato repositorio,RepositorioInmueble repoInmuebles, IConfiguration config)
     {
         this.repo = repositorio;
         this.config = config;
+        this.repoInmuebles = repoInmuebles;
     }
     public IActionResult Index(int pagina = 1, int tamanoPagina = 5)
     {
@@ -30,9 +32,31 @@ public class ContratoController : Controller
 
         if (ModelState.IsValid)
         {
+            //validar si el inmueble esta activo
+            var inmueble = repoInmuebles.ObtenerPorID(contrato.Id_inmueble);
+            if (inmueble == null)
+            {
+                TempData["Mensaje"] = "El inmueble seleccionado no existe.";
+                return View(contrato);
+            }
+            if(inmueble.Estado == false){
+                TempData["Mensaje"] = "El inmueble seleccionado Esta desactivado.";
+                return View(contrato);
+            }
+            //validar que el inmueble no este ocupado dentro de Fecha_desde Fecha_hasta debe decir que esta ocupado
+            var contratosExistentes = repo.ObtenerContratosActivosPorInmueble(contrato.Id_inmueble);
+            foreach (var existente in contratosExistentes)
+            {
+                if ((contrato.Fecha_desde <= existente.Fecha_hasta) && (contrato.Fecha_hasta >= existente.Fecha_desde))
+                {
 
+                    TempData["Mensaje"] = $"El inmueble ya se encuentra alquilado entre {existente.Fecha_desde:dd/MM/yyyy} y {existente.Fecha_hasta:dd/MM/yyyy}.";
+                    return RedirectToAction("Index");
+                }
+            }
             TempData["Mensaje"] = "Contrato agregado exitosamente.";
             contrato.Monto_a_pagar = contrato.Monto_total;
+            contrato.Creado_por = User.Identity?.Name ?? "Sistema"; 
             repo.AgregarContrato(contrato);
             return RedirectToAction("Index");
 
@@ -213,11 +237,13 @@ public class ContratoController : Controller
                 contrato.Monto_a_pagar += contrato.Monto * 2;
                 contrato.Monto_total = contrato.Monto * contrato.Meses;
                 contrato.Estado = false;
+                contrato.Fecha_final = DateTime.Now;
+                contrato.Terminado_por = User.Identity?.Name ?? "Sistema"; 
                 //logica multa
                 multa.Monto = contrato.Monto * 2;
-                multa.Razon_multa = "Se pagó menos de la mitad del contrato.";
+                multa.Razon_multa = "Falto Pagar Mas de la mitad del contrato.";
                 repo.AnularContrato(contrato, multa);
-                TempData["Mensaje"] = "Contrato Cancelado.";
+                TempData["Mensaje"] = "Contrato Cancelado y aplicando multa.";
                 return RedirectToAction("Index");
             }
             else
@@ -228,11 +254,13 @@ public class ContratoController : Controller
                 contrato.Monto_a_pagar += contrato.Monto * 1;
                 contrato.Monto_total = contrato.Monto * contrato.Meses;
                 contrato.Estado = false;
+                contrato.Fecha_final = DateTime.Now;
+                contrato.Terminado_por = User.Identity?.Name ?? "Sistema"; 
                 //logica multa
                 multa.Monto = contrato.Monto * 2;
-                multa.Razon_multa = "Se pagó más de la mitad del contrato.";
+                multa.Razon_multa = "Falto Pagar menos de la mitad del contrato.";
                 repo.AnularContrato(contrato, multa);
-                TempData["Mensaje"] = "Contrato Cancelado.";
+                TempData["Mensaje"] = "Contrato Cancelado y aplicando multa.";
                 return RedirectToAction("Index");
             }
         }

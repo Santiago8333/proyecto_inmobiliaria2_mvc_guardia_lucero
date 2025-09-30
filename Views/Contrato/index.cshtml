@@ -18,6 +18,8 @@
     <th scope="col">Fecha desde</th>
     <th scope="col">Fecha hasta</th>
     <th scope="col">Fecha_creacion</th>
+    <th scope="col">Creado por</th>
+    <th scope="col">Terminado por</th>
     <th scope="col">Estado</th>
     <th scope="col">Accion</th>
     </tr>
@@ -28,6 +30,7 @@
     int i = 1;
     foreach (var p in Model)
     {
+    if(p.Estado){
         <tr>
             <td>@i</td>
             <td>@Html.DisplayFor(modelp => p.EmailInquilino)</td>
@@ -37,7 +40,12 @@
             <td>@p.Fecha_desde.ToString("dd/MM/yyyy")</td>
             <td>@p.Fecha_hasta.ToString("dd/MM/yyyy")</td>
             <td>@p.Fecha_creacion.ToString("dd/MM/yyyy")</td>
-            <td>@(p.Estado ? "Activo" : "Inactivo")</td>
+            @if (User.IsInRole("Administrador"))
+                {
+                    <td>@Html.DisplayFor(modelp => p.Creado_por)</td>
+                    <td>@Html.DisplayFor(modelp => p.Terminado_por)</td>
+                }
+            <td>@(p.Estado ? "Activo" : "Cancelado")</td>
             <td>
     <div class="dropdown position-static">
         <button class="btn btn-sm btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -67,19 +75,65 @@
                         <i class="fa-solid fa-x"></i> Cancelar
                   </a>
             </li>
+        </ul>
+    </div>
+</td>
+        </tr>
+        i++;
+    }else{
+            <tr class="table-danger"> 
+            <td>@i</td>
+            <td>@Html.DisplayFor(modelp => p.EmailInquilino)</td>
+            <td>@Html.DisplayFor(modelp => p.DireccionInmueble)</td>
+            <td>@Html.DisplayFor(modelp => p.Monto_total)</td>
+            <td>@Html.DisplayFor(modelp => p.Meses)</td>
+            <td>@p.Fecha_desde.ToString("dd/MM/yyyy")</td>
+            <td>@p.Fecha_hasta.ToString("dd/MM/yyyy")</td>
+            <td>@p.Fecha_creacion.ToString("dd/MM/yyyy")</td>
+            @if (User.IsInRole("Administrador"))
+                {
+                    <td>@Html.DisplayFor(modelp => p.Creado_por)</td>
+                    <td>@Html.DisplayFor(modelp => p.Terminado_por)</td>
+                }
+            <td>@(p.Estado ? "Activo" : "Cancelado")</td>
+            <td>
+    <div class="dropdown position-static">
+        <button class="btn btn-sm btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-three-dots-vertical"></i> <!-- Icono de 3 puntos -->
+        </button>
+        <ul class="dropdown-menu">
             <li>
+                <a class="dropdown-item" asp-action="Edicion" asp-route-id="@p.Id_contrato" title="Editar">
+                     <i class="fa-solid fa-pencil"></i> Modificar
+                </a>
+            </li>
+             <li>
+                <a class="dropdown-item" asp-action="Detalle" asp-route-id="@p.Id_contrato" title="Detalle">
+                     <i class="fa-solid fa-book"></i> Detalle
+                </a>
+            </li>
+             <li>
+                <a class="dropdown-item" asp-action="Pago" asp-route-id="@p.Id_contrato" title="Pago">
+                     <i class="fa-solid fa-money-bill"></i> Pagos
+                </a>
+            </li>
+            <li>
+                @if (User.IsInRole("Administrador"))
+                {
                 <a href="javascript:void(0);" 
                       data-id="@p.Id_contrato" 
                       class="dropdown-item" 
                       onclick="confirmDelete(this)">
                         <i class="fa-solid fa-trash"></i> Eliminar
                   </a>
+                  }
             </li>
         </ul>
     </div>
 </td>
         </tr>
         i++;
+        }
     }
 }
 else

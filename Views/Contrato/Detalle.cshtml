@@ -1,7 +1,7 @@
 @model proyecto_inmobiliaria2_mvc_guardia_lucero.Models.Contratos
 @{
     ViewData["Title"] = "Contrato Detalle";
-    string estadoTexto = Model.Estado ? "Activo" : "Inactivo";
+    string estadoTexto = Model.Estado ? "Activo" : "Cancelado";
     string completado = Model.Contrato_completado ? "SI" : "NO";
 }
 <h1>Inmueble detalle</h1>

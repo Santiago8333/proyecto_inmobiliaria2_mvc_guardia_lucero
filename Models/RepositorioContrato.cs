@@ -559,19 +559,19 @@ public void EliminarContrato(int id)
             }
         }
     }
-public void AnularContrato(Contratos contrato, Multas multa)
-{
-    
-    using (MySqlConnection connection = new MySqlConnection(ConectionString))
+    public void AnularContrato(Contratos contrato, Multas multa)
     {
-        connection.Open();
-        
-        MySqlTransaction transaction = connection.BeginTransaction();
 
-        try
+        using (MySqlConnection connection = new MySqlConnection(ConectionString))
         {
-           
-            var queryContrato = $@"
+            connection.Open();
+
+            MySqlTransaction transaction = connection.BeginTransaction();
+
+            try
+            {
+
+                var queryContrato = $@"
                 UPDATE contratos SET
                     {nameof(Contratos.Monto_total)} = @Monto_total,
                     {nameof(Contratos.Monto_a_pagar)} = @Monto_a_pagar,
@@ -580,46 +580,80 @@ public void AnularContrato(Contratos contrato, Multas multa)
                     {nameof(Contratos.Estado)} = @Estado
                 WHERE {nameof(Contratos.Id_contrato)} = @Id_contrato";
 
-            using (MySqlCommand commandContrato = new MySqlCommand(queryContrato, connection, transaction)) 
-            {
-                commandContrato.Parameters.AddWithValue("@Id_contrato", contrato.Id_contrato);
-                commandContrato.Parameters.AddWithValue("@Monto_total", contrato.Monto_total);
-                commandContrato.Parameters.AddWithValue("@Monto_a_pagar", contrato.Monto_a_pagar);
-                commandContrato.Parameters.AddWithValue("@Fecha_final", (object?)contrato.Fecha_final ?? DBNull.Value);
-                commandContrato.Parameters.AddWithValue("@Meses", contrato.Meses);
-                commandContrato.Parameters.AddWithValue("@Estado", contrato.Estado);
+                using (MySqlCommand commandContrato = new MySqlCommand(queryContrato, connection, transaction))
+                {
+                    commandContrato.Parameters.AddWithValue("@Id_contrato", contrato.Id_contrato);
+                    commandContrato.Parameters.AddWithValue("@Monto_total", contrato.Monto_total);
+                    commandContrato.Parameters.AddWithValue("@Monto_a_pagar", contrato.Monto_a_pagar);
+                    commandContrato.Parameters.AddWithValue("@Fecha_final", (object?)contrato.Fecha_final ?? DBNull.Value);
+                    commandContrato.Parameters.AddWithValue("@Meses", contrato.Meses);
+                    commandContrato.Parameters.AddWithValue("@Estado", contrato.Estado);
 
-                commandContrato.ExecuteNonQuery();
-            }
+                    commandContrato.ExecuteNonQuery();
+                }
 
-           
-            var queryMulta = @"
+
+                var queryMulta = @"
                 INSERT INTO multas (Id_contrato, Monto, Fecha, Razon_multa)
                 VALUES (@Id_contrato, @MontoMulta, @FechaMulta, @Razon_multa)";
-            
-            using (MySqlCommand commandMulta = new MySqlCommand(queryMulta, connection, transaction)) 
-            {
-                
-                commandMulta.Parameters.AddWithValue("@Id_contrato", contrato.Id_contrato);
-                commandMulta.Parameters.AddWithValue("@MontoMulta", multa.Monto);
-                commandMulta.Parameters.AddWithValue("@FechaMulta", multa.Fecha);
-                commandMulta.Parameters.AddWithValue("@Razon_multa", multa.Razon_multa);
 
-                commandMulta.ExecuteNonQuery();
+                using (MySqlCommand commandMulta = new MySqlCommand(queryMulta, connection, transaction))
+                {
+
+                    commandMulta.Parameters.AddWithValue("@Id_contrato", contrato.Id_contrato);
+                    commandMulta.Parameters.AddWithValue("@MontoMulta", multa.Monto);
+                    commandMulta.Parameters.AddWithValue("@FechaMulta", multa.Fecha);
+                    commandMulta.Parameters.AddWithValue("@Razon_multa", multa.Razon_multa);
+
+                    commandMulta.ExecuteNonQuery();
+                }
+
+
+                transaction.Commit();
+            }
+            catch (Exception ex)
+            {
+
+                transaction.Rollback();
+                Console.WriteLine("Error en la transacción: " + ex.Message);
+
+                throw;
             }
 
-
-            transaction.Commit();
         }
-        catch (Exception ex)
-        {
-           
-            transaction.Rollback();
-            Console.WriteLine("Error en la transacción: " + ex.Message);
-          
-            throw;
-        }
-        
     }
-}
+    public List<Contratos> ObtenerContratosActivosPorInmueble(int idInmueble)
+    {
+        var listaContratos = new List<Contratos>();
+
+        using (MySqlConnection connection = new MySqlConnection(ConectionString))
+        {
+            // La consulta ahora filtra por Id_inmueble y por Estado = 1 (o true)
+            var query = @"
+            SELECT Fecha_desde, Fecha_hasta
+            FROM contratos
+            WHERE Id_inmueble = @IdInmueble AND Estado = 1";
+
+            using (MySqlCommand command = new MySqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@IdInmueble", idInmueble);
+                connection.Open();
+
+                using (var reader = command.ExecuteReader())
+                {
+                    // Usamos un 'while' porque pueden existir múltiples contratos
+                    while (reader.Read())
+                    {
+                        listaContratos.Add(new Contratos
+                        {
+                            Fecha_desde = reader.GetDateTime("Fecha_desde"),
+                            Fecha_hasta = reader.GetDateTime("Fecha_hasta"),
+                        });
+                    }
+                }
+            }
+        }
+        return listaContratos;
+    }
+
 }

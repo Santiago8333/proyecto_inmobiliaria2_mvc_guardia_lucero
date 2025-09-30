@@ -247,7 +247,7 @@ public class RepositorioInmueble : RepositorioBase
         {
             var query = @"SELECT Id_inmueble, Id_propietario ,Uso, Tipo, Direccion,Ambiente,Precio,Longitud,Latitud,Fecha_creacion,Estado
                             FROM inmuebles
-                            WHERE LOWER(Direccion) LIKE LOWER(@Direccion)";
+                            WHERE LOWER(Direccion) LIKE LOWER(@Direccion) AND Estado = 1";
 
             using (MySqlCommand command = new MySqlCommand(query, connection))
             {

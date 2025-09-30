@@ -143,7 +143,6 @@ public IActionResult Actualizar(Inmuebles actualizarInmuebles, IFormFile? Portad
     [HttpGet]
     public IActionResult Buscar(string term)
     {
-
         var resultados = repo.BuscarPorDireccion(term ?? "");
         return Json(resultados);
     }
