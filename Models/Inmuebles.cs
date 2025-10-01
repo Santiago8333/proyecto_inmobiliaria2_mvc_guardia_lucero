@@ -15,7 +15,8 @@ public class Inmuebles
     public DateTime Fecha_creacion { get; set; }
     public string? Portada { get; set; }
     public IFormFile? PortadaFile { get; set; }
-
+    public string? Creado_por { get; set; } = "";
+    public string? Desactivado_por { get; set; } = "";
     public Boolean Estado { get; set; } 
 
 }

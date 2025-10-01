@@ -63,6 +63,13 @@ public class RepositorioContrato : RepositorioBase
                         Fecha_final = reader.IsDBNull(reader.GetOrdinal("Fecha_final"))
                                         ? (DateTime?)null
                                         : reader.GetDateTime("Fecha_final"),
+                        Creado_por = reader.IsDBNull(reader.GetOrdinal(nameof(Contratos.Creado_por))) 
+                            ? null 
+                            : reader.GetString(nameof(Contratos.Creado_por)),
+
+                        Terminado_por = reader.IsDBNull(reader.GetOrdinal(nameof(Contratos.Terminado_por))) 
+                            ? null 
+                            : reader.GetString(nameof(Contratos.Terminado_por)),
                         Meses = reader.GetInt32(nameof(Contratos.Meses)),
                         Estado = reader.GetBoolean(nameof(Contratos.Estado)),
                         DireccionInmueble = reader.GetString("DireccionInmueble"),
@@ -90,8 +97,8 @@ public class RepositorioContrato : RepositorioBase
 
         using (MySqlConnection connection = new MySqlConnection(ConectionString))
         {
-            var query = $@"INSERT INTO contratos ({nameof(Contratos.Id_inquilino)}, {nameof(Contratos.Id_inmueble)}, {nameof(Contratos.Monto)}, {nameof(Contratos.Monto_total)}, {nameof(Contratos.Monto_a_pagar)},{nameof(Contratos.Fecha_desde)},{nameof(Contratos.Fecha_hasta)},{nameof(Contratos.Fecha_final)},{nameof(Contratos.Meses)})
-                    VALUES (@Id_inquilino, @Id_inmueble, @Monto,@Monto_total,@Monto_a_pagar,@Fecha_desde,@Fecha_hasta,@Fecha_final,@Meses)";
+            var query = $@"INSERT INTO contratos ({nameof(Contratos.Id_inquilino)}, {nameof(Contratos.Id_inmueble)}, {nameof(Contratos.Monto)}, {nameof(Contratos.Monto_total)}, {nameof(Contratos.Monto_a_pagar)},{nameof(Contratos.Fecha_desde)},{nameof(Contratos.Fecha_hasta)},{nameof(Contratos.Fecha_final)},{nameof(Contratos.Meses)},{nameof(Contratos.Creado_por)})
+                    VALUES (@Id_inquilino, @Id_inmueble, @Monto,@Monto_total,@Monto_a_pagar,@Fecha_desde,@Fecha_hasta,@Fecha_final,@Meses,@Creado_por)";
 
             using (MySqlCommand command = new MySqlCommand(query, connection))
             {
@@ -105,6 +112,7 @@ public class RepositorioContrato : RepositorioBase
                 command.Parameters.AddWithValue("@Fecha_hasta", nuevoContrato.Fecha_hasta);
                 command.Parameters.AddWithValue("@Fecha_final", nuevoContrato.Fecha_final);
                 command.Parameters.AddWithValue("@Meses", nuevoContrato.Meses);
+                command.Parameters.AddWithValue("@Creado_por", nuevoContrato.Creado_por);
                 connection.Open();
                 command.ExecuteNonQuery(); // Ejecuta la consulta de inserción
                 connection.Close();
@@ -345,14 +353,15 @@ public void EliminarContrato(int id)
                     }
 
 
-                    var queryInsert = $@"INSERT INTO pagos ({nameof(Pagos.Id_contrato)}, {nameof(Pagos.Detalle)}, {nameof(Pagos.Monto)})
-                                        VALUES (@Id_contrato, @Detalle, @Monto)";
+                    var queryInsert = $@"INSERT INTO pagos ({nameof(Pagos.Id_contrato)}, {nameof(Pagos.Detalle)}, {nameof(Pagos.Monto)},{nameof(Pagos.Creado_por)})
+                                        VALUES (@Id_contrato, @Detalle, @Monto,@Creado_por)";
 
                     using (MySqlCommand command = new MySqlCommand(queryInsert, connection, transaction))
                     {
                         command.Parameters.AddWithValue("@Id_contrato", nuevoPago.Id_contrato);
                         command.Parameters.AddWithValue("@Detalle", nuevoPago.Detalle);
                         command.Parameters.AddWithValue("@Monto", nuevoPago.Monto);
+                        command.Parameters.AddWithValue("@Creado_por", nuevoPago.Creado_por);
                         command.ExecuteNonQuery();
                     }
 
@@ -390,7 +399,7 @@ public void EliminarContrato(int id)
         }
     }
 
-    public void AnularPago(int Id_pago, int Id_contrato, decimal Monto)
+    public void AnularPago(int Id_pago, int Id_contrato, decimal Monto,string Anulado_por)
     {
 
         if (Monto <= 0)
@@ -407,10 +416,11 @@ public void EliminarContrato(int id)
             {
                 try
                 {
-                    var queryPago = @"UPDATE pagos SET Estado = false WHERE Id_pago = @Id_pago";
+                    var queryPago = @"UPDATE pagos SET Estado = false ,Anulado_por = @Anulado_por	WHERE Id_pago = @Id_pago";
                     using (MySqlCommand cmdPago = new MySqlCommand(queryPago, connection, transaction))
                     {
                         cmdPago.Parameters.AddWithValue("@Id_pago", Id_pago);
+                        cmdPago.Parameters.AddWithValue("@Anulado_por", Anulado_por);
                         cmdPago.ExecuteNonQuery();
                     }
 
@@ -577,6 +587,7 @@ public void EliminarContrato(int id)
                     {nameof(Contratos.Monto_a_pagar)} = @Monto_a_pagar,
                     {nameof(Contratos.Fecha_final)} = @Fecha_final,
                     {nameof(Contratos.Meses)} = @Meses,
+                    {nameof(Contratos.Terminado_por)} = @Terminado_por,
                     {nameof(Contratos.Estado)} = @Estado
                 WHERE {nameof(Contratos.Id_contrato)} = @Id_contrato";
 
@@ -587,6 +598,7 @@ public void EliminarContrato(int id)
                     commandContrato.Parameters.AddWithValue("@Monto_a_pagar", contrato.Monto_a_pagar);
                     commandContrato.Parameters.AddWithValue("@Fecha_final", (object?)contrato.Fecha_final ?? DBNull.Value);
                     commandContrato.Parameters.AddWithValue("@Meses", contrato.Meses);
+                    commandContrato.Parameters.AddWithValue("@Terminado_por", contrato.Terminado_por);
                     commandContrato.Parameters.AddWithValue("@Estado", contrato.Estado);
 
                     commandContrato.ExecuteNonQuery();

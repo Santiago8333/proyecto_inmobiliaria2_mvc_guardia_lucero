@@ -64,7 +64,7 @@ public class ContratoController : Controller
         TempData["Mensaje"] = "Error al agregar.";
         return RedirectToAction("Index");
     }
-
+    [Authorize(Policy = "Administrador")]
     public IActionResult Eliminar(int id)
     {
         var contrato = repo.BuscarPorId(id);
@@ -180,6 +180,7 @@ public class ContratoController : Controller
                     repo.ActualizarContratoCompletado(pago.Id_contrato);
                 }
                 TempData["Mensaje"] = "Pago agregado exitosamente.";
+                pago.Creado_por = User.Identity?.Name ?? "Sistema"; 
                 repo.AgregarPago(pago);
                 return RedirectToAction("Index");
             }
@@ -201,7 +202,8 @@ public class ContratoController : Controller
             TempData["Mensaje"] = "Pago no encontrado.";
             return RedirectToAction("Index");
         }
-        repo.AnularPago(Id_pago, Id_contrato, pago.Monto);
+        pago.Anulado_por = User.Identity?.Name ?? "Sistema"; 
+        repo.AnularPago(Id_pago, Id_contrato, pago.Monto,pago.Anulado_por);
         TempData["Mensaje"] = "Pago Anulado.";
         return RedirectToAction("Index");
     }

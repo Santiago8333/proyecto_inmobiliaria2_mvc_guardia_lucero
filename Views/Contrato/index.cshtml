@@ -18,8 +18,11 @@
     <th scope="col">Fecha desde</th>
     <th scope="col">Fecha hasta</th>
     <th scope="col">Fecha_creacion</th>
+    @if (User.IsInRole("Administrador"))
+    {
     <th scope="col">Creado por</th>
     <th scope="col">Terminado por</th>
+    }
     <th scope="col">Estado</th>
     <th scope="col">Accion</th>
     </tr>
@@ -190,7 +193,7 @@ else
 <form asp-action="Agregar" method="post" class="needs-validation" novalidate>
     <div class="mb-3">
         <label for="InputEmailInquilino" class="form-label">Email Inquilino</label>
-        <input class="form-control" list="inquilinoList" id="InputEmailInquilino" name="EmailInquilino" required>
+        <input class="form-control" list="inquilinoList" id="InputEmailInquilino" name="EmailInquilino" autocomplete="off" required>
         <datalist id="inquilinoList">
     
         </datalist>
@@ -200,7 +203,7 @@ else
     </div>
   <div class="mb-3">
     <label for="InputDireccionInmueble" class="form-label">Direccion Inmueble</label>
-        <input class="form-control" list="inmuebleList" id="InputDireccionInmueble" name="DireccionInmueble" required>
+        <input class="form-control" autocomplete="off" list="inmuebleList" id="InputDireccionInmueble" name="DireccionInmueble" required>
         <datalist id="inmuebleList">
         </datalist>
   <input type="hidden" id="Id_inmueble" name="Id_inmueble">

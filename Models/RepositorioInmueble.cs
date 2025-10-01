@@ -27,7 +27,9 @@ public class RepositorioInmueble : RepositorioBase
                             i.Latitud,
                             i.Fecha_creacion,
                             i.Estado,
-                            i.Portada
+                            i.Portada,
+                            i.Creado_por,
+                            i.Desactivado_por
                         FROM inmuebles i
                         JOIN propietarios p ON i.Id_propietario = p.Id_propietario
                         ORDER BY i.Id_inmueble
@@ -55,8 +57,17 @@ public class RepositorioInmueble : RepositorioBase
                         Longitud = reader.GetDouble(nameof(Inmuebles.Longitud)),
                         Latitud = reader.GetDouble(nameof(Inmuebles.Latitud)),
                         Fecha_creacion = reader.GetDateTime(nameof(Inmuebles.Fecha_creacion)),
-                        Portada = reader.GetString(nameof(Inmuebles.Portada)),
-                        Estado = reader.GetBoolean(nameof(Inmuebles.Estado))
+                        Portada = reader.IsDBNull(reader.GetOrdinal(nameof(Inmuebles.Portada))) 
+                                    ? null 
+                                    : reader.GetString(nameof(Inmuebles.Portada)),
+                        Estado = reader.GetBoolean(nameof(Inmuebles.Estado)),
+                        Creado_por = reader.IsDBNull(reader.GetOrdinal(nameof(Inmuebles.Creado_por))) 
+                            ? null 
+                            : reader.GetString(nameof(Inmuebles.Creado_por)),
+
+                        Desactivado_por = reader.IsDBNull(reader.GetOrdinal(nameof(Inmuebles.Desactivado_por))) 
+                            ? null 
+                            : reader.GetString(nameof(Inmuebles.Desactivado_por)),
                     });
                 }
             }
@@ -110,8 +121,8 @@ public class RepositorioInmueble : RepositorioBase
 
         using (MySqlConnection connection = new MySqlConnection(ConectionString))
         {
-            var query = $@"INSERT INTO inmuebles ({nameof(Inmuebles.Id_propietario)}, {nameof(Inmuebles.Uso)}, {nameof(Inmuebles.Tipo)},{nameof(Inmuebles.Direccion)}, {nameof(Inmuebles.Ambiente)}, {nameof(Inmuebles.Precio)}, {nameof(Inmuebles.Longitud)}, {nameof(Inmuebles.Latitud)},{nameof(Inmuebles.Portada)})
-                    VALUES (@Id_propietario, @Uso, @Tipo,@Direccion,@Ambiente,@Precio,@Longitud,@Latitud,@Portada)";
+            var query = $@"INSERT INTO inmuebles ({nameof(Inmuebles.Id_propietario)}, {nameof(Inmuebles.Uso)}, {nameof(Inmuebles.Tipo)},{nameof(Inmuebles.Direccion)}, {nameof(Inmuebles.Ambiente)}, {nameof(Inmuebles.Precio)}, {nameof(Inmuebles.Longitud)}, {nameof(Inmuebles.Latitud)},{nameof(Inmuebles.Portada)},{nameof(Inmuebles.Creado_por)})
+                    VALUES (@Id_propietario, @Uso, @Tipo,@Direccion,@Ambiente,@Precio,@Longitud,@Latitud,@Portada,@Creado_por)";
 
             using (MySqlCommand command = new MySqlCommand(query, connection))
             {
@@ -125,6 +136,7 @@ public class RepositorioInmueble : RepositorioBase
                 command.Parameters.AddWithValue("@Longitud", nuevoInmuebles.Longitud);
                 command.Parameters.AddWithValue("@Latitud", nuevoInmuebles.Latitud);
                 command.Parameters.AddWithValue("@Portada", nuevoInmuebles.Portada);
+                command.Parameters.AddWithValue("@Creado_por", nuevoInmuebles.Creado_por);
 
                 connection.Open();
                 command.ExecuteNonQuery(); // Ejecuta la consulta de inserción
@@ -132,6 +144,7 @@ public class RepositorioInmueble : RepositorioBase
             }
         }
     }
+    
     public void EliminarInmueble(int id)
     {
         using (MySqlConnection connection = new MySqlConnection(ConectionString))
@@ -147,6 +160,8 @@ public class RepositorioInmueble : RepositorioBase
             }
         }
     }
+    
+    
     public Inmuebles? ObtenerPorID(int id)
     {
         Inmuebles? res = null;
@@ -193,7 +208,9 @@ public class RepositorioInmueble : RepositorioBase
                             Longitud = reader.GetDouble(nameof(Inmuebles.Longitud)),
                             Latitud = reader.GetDouble(nameof(Inmuebles.Latitud)),
                             Estado = reader.GetBoolean(nameof(Inmuebles.Estado)),
-                            Portada = reader.GetString(nameof(Inmuebles.Portada)),
+                            Portada = reader.IsDBNull(reader.GetOrdinal(nameof(Inmuebles.Portada)))
+                                    ? null
+                                    : reader.GetString(nameof(Inmuebles.Portada)),
                             EmailPropietario = reader.GetString("EmailPropietario")
                         };
                     }
@@ -281,18 +298,18 @@ public class RepositorioInmueble : RepositorioBase
 
         return lista;
     }
-    public void DesactivarInmueble(int idInmueble)
+    public void DesactivarInmueble(int idInmueble,string Name)
 {
     using (MySqlConnection connection = new MySqlConnection(ConectionString))
     {
         var query = @"UPDATE inmuebles
-                      SET Estado = 0
+                      SET Estado = 0,Desactivado_por = @Desactivado_por
                       WHERE Id_inmueble = @Id";
 
         using (MySqlCommand command = new MySqlCommand(query, connection))
         {
             command.Parameters.AddWithValue("@Id", idInmueble);
-
+            command.Parameters.AddWithValue("@Desactivado_por", Name);
             connection.Open();
             command.ExecuteNonQuery();
         }
@@ -303,13 +320,13 @@ public class RepositorioInmueble : RepositorioBase
     using (MySqlConnection connection = new MySqlConnection(ConectionString))
     {
         var query = @"UPDATE inmuebles
-                      SET Estado = 1
+                      SET Estado = 1,Desactivado_por = @Desactivado_por
                       WHERE Id_inmueble = @Id";
 
         using (MySqlCommand command = new MySqlCommand(query, connection))
         {
             command.Parameters.AddWithValue("@Id", idInmueble);
-
+            command.Parameters.AddWithValue("@Desactivado_por", "");
             connection.Open();
             command.ExecuteNonQuery();
         }

@@ -14,8 +14,8 @@ public class Contratos
     public DateTime Fecha_hasta { get; set; }
     public DateTime? Fecha_final { get; set; }
     public int Meses { get; set; }
-    public string Creado_por { get; set; } = "";
-    public string Terminado_por { get; set; } = "";
+    public string? Creado_por { get; set; } = "";
+    public string? Terminado_por { get; set; } = "";
     public string DireccionInmueble { get; set; } = "";
     public string EmailInquilino { get; set; } = "";
     public Boolean Estado { get; set; }

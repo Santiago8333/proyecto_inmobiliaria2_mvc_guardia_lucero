@@ -18,6 +18,11 @@
     <th scope="col">Precio</th>
     <th scope="col">Portada</th>
     <th scope="col">Fecha de Creacion</th>
+    @if (User.IsInRole("Administrador"))
+    {
+    <th scope="col">Creado por</th>
+    <th scope="col">Desactivado por</th>
+    }
     <th scope="col">Estado</th>
     <th scope="col">Accion</th>
     </tr>
@@ -47,6 +52,11 @@
             }
             </td>
             <td>@p.Fecha_creacion.ToString("dd/MM/yyyy")</td>
+            @if (User.IsInRole("Administrador"))
+                {
+                    <td>@Html.DisplayFor(modelp => p.Creado_por)</td>
+                    <td>@Html.DisplayFor(modelp => p.Desactivado_por)</td>
+                }
             <td>@(p.Estado ? "Activo" : "Desactivado")</td>
             <td>
     <div class="dropdown position-static">
@@ -72,6 +82,8 @@
                         <i class="fa-solid fa-x"></i> Desactivar
                   </a>
             </li>
+            @if (User.IsInRole("Administrador"))
+                {
             <li>
                 <a href="javascript:void(0);" 
                       data-id="@p.Id_inmueble" 
@@ -80,6 +92,7 @@
                         <i class="fa-solid fa-trash"></i> Eliminar
                   </a>
             </li>
+            }
         </ul>
     </div>
 </td>
@@ -104,6 +117,11 @@
             }
             </td>
             <td>@p.Fecha_creacion.ToString("dd/MM/yyyy")</td>
+            @if (User.IsInRole("Administrador"))
+              {
+                  <td>@Html.DisplayFor(modelp => p.Creado_por)</td>
+                  <td>@Html.DisplayFor(modelp => p.Desactivado_por)</td>
+              }
             <td>@(p.Estado ? "Activo" : "Desactivado")</td>
             <td>
     <div class="dropdown position-static">
@@ -129,6 +147,8 @@
                       <i class="fa-solid fa-check"></i> Activar
                   </a>
             </li>
+            @if (User.IsInRole("Administrador"))
+                {
             <li>
                 <a href="javascript:void(0);" 
                       data-id="@p.Id_inmueble" 
@@ -137,6 +157,7 @@
                         <i class="fa-solid fa-trash"></i> Eliminar
                   </a>
             </li>
+            }
         </ul>
     </div>
 </td>
@@ -199,7 +220,7 @@ else
 <form asp-action="Agregar" enctype="multipart/form-data" method="post" class="needs-validation" novalidate>
     <div class="mb-3">
         <label for="InputEmailPropietario" class="form-label">Email Propietario</label>
-        <input class="form-control" list="propietariosList" id="InputEmailPropietario" name="EmailPropietario" required>
+        <input class="form-control" autocomplete="off" list="propietariosList" id="InputEmailPropietario" name="EmailPropietario" required>
         <datalist id="propietariosList">
             
         </datalist>
@@ -287,7 +308,7 @@ else
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        ¿Estás seguro de que deseas eliminar este inmueble?
+        ¿Estás seguro de que deseas eliminar este inmueble? se eliminara contratos a sociados
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>

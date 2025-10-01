@@ -12,6 +12,11 @@
         <th>Monto</th>
         <th>Detalle</th>
         <th>Fecha del pago</th>
+        @if (User.IsInRole("Administrador"))
+        {
+        <th scope="col">Creado por</th>
+        <th scope="col">Anulado por</th>
+        }
         <th>Estado</th>
         <th>Acciones</th>
     </tr>
@@ -28,6 +33,11 @@
             <td>@Html.DisplayFor(modelp => p.Monto)</td>
             <td>@Html.DisplayFor(modelp => p.Detalle)</td>
             <td>@p.Fecha_creacion.ToString("dd/MM/yyyy")</td>
+            @if (User.IsInRole("Administrador"))
+            {
+                <td>@Html.DisplayFor(modelp => p.Creado_por)</td>
+                <td>@Html.DisplayFor(modelp => p.Anulado_por)</td>
+            }
             <td>@(p.Estado ? "Activo" : "Anulado")</td>
             <td>
     <div class="dropdown position-static">
@@ -54,6 +64,11 @@
             <td>@Html.DisplayFor(modelp => p.Monto)</td>
             <td>@Html.DisplayFor(modelp => p.Detalle)</td>
             <td>@p.Fecha_creacion.ToString("dd/MM/yyyy")</td>
+            @if (User.IsInRole("Administrador"))
+            {
+                <td>@Html.DisplayFor(modelp => p.Creado_por)</td>
+                <td>@Html.DisplayFor(modelp => p.Anulado_por)</td>
+            }
             <td>@(p.Estado ? "Activo" : "Anulado")</td>
             <td>
           <div class="dropdown position-static">

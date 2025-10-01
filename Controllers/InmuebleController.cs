@@ -16,13 +16,13 @@ public class InmuebleController : Controller
     }
     public IActionResult Index(int pagina = 1, int tamanoPagina = 5)
     {
-        var listaInquilinos = repo.ObtenerPaginados(pagina, tamanoPagina);
+        var listaInmuebles = repo.ObtenerPaginados(pagina, tamanoPagina);
 
         int totalRegistros = repo.ContarInmuebles();
         ViewBag.PaginaActual = pagina;
         ViewBag.TotalPaginas = (int)Math.Ceiling((double)totalRegistros / tamanoPagina);
         ViewBag.Registros = totalRegistros > 0;
-        return View(listaInquilinos);
+        return View(listaInmuebles);
     }
     [HttpPost]
 public IActionResult Agregar(Inmuebles inmueble)
@@ -47,7 +47,7 @@ public IActionResult Agregar(Inmuebles inmueble)
 
             inmueble.Portada = uniqueFileName;
         }
-
+        inmueble.Creado_por = User.Identity?.Name ?? "Sistema"; 
         repo.AgregarInmueble(inmueble);
         TempData["Mensaje"] = "Inmueble agregado exitosamente.";
         return RedirectToAction("Index");
@@ -56,7 +56,7 @@ public IActionResult Agregar(Inmuebles inmueble)
     TempData["Mensaje"] = "Error al agregar el inmueble.";
     return View(inmueble);
 }
-
+    [Authorize(Policy = "Administrador")]
     public IActionResult Eliminar(int id)
     {
         var inmueble = repo.ObtenerPorID(id);
@@ -162,7 +162,8 @@ public IActionResult Actualizar(Inmuebles actualizarInmuebles, IFormFile? Portad
                 TempData["Mensaje"] = "Inmueble no encontrado.";
                 return RedirectToAction("Index");
             }
-            repo.DesactivarInmueble(inmueble.Id_inmueble);
+            var Name = User.Identity?.Name ?? "Sistema"; 
+            repo.DesactivarInmueble(inmueble.Id_inmueble,Name);
             TempData["Mensaje"] = "Inmueble desactivado.";
             return RedirectToAction("Index");
         }
