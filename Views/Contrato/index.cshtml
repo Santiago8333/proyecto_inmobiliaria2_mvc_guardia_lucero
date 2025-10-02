@@ -48,7 +48,18 @@
                     <td>@Html.DisplayFor(modelp => p.Creado_por)</td>
                     <td>@Html.DisplayFor(modelp => p.Terminado_por)</td>
                 }
-            <td>@(p.Estado ? "Activo" : "Cancelado")</td>
+            <td>@if (p.Estado && p.Contrato_completado)
+                    {
+                        <text>Completado</text>
+                    }
+                    else if (p.Estado)
+                    {
+                        <text>Activo</text>
+                    }
+                    else
+                    {
+                        <text>Cancelado</text>
+                    }</td>
             <td>
     <div class="dropdown position-static">
         <button class="btn btn-sm btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -70,6 +81,8 @@
                      <i class="fa-solid fa-money-bill"></i> Pagos
                 </a>
             </li>
+            @if (p.Estado && !p.Contrato_completado)
+                {
             <li>
                 <a href="javascript:void(0);" 
                       data-id="@p.Id_contrato" 
@@ -78,6 +91,33 @@
                         <i class="fa-solid fa-x"></i> Cancelar
                   </a>
             </li>
+            }
+            @if (User.IsInRole("Administrador"))
+                {
+                @if (p.Estado && p.Contrato_completado)
+                {
+            <li>
+            
+                <a href="javascript:void(0);" 
+                      data-id="@p.Id_contrato" 
+                      class="dropdown-item" 
+                      onclick="confirmDelete(this)">
+                        <i class="fa-solid fa-trash"></i> Eliminar
+                  </a>
+                  
+            </li>
+            <li>
+                <a href="javascript:void(0);" 
+                      data-id="@p.Id_contrato" 
+                      data-id2="@p.Id_inmueble"
+                      class="dropdown-item" 
+                      onclick="confirmRenovar(this)">
+                        <i class="fa-solid fa-check"></i> Renovar
+                  </a>
+                  
+            </li>
+            }
+            }
         </ul>
     </div>
 </td>
@@ -298,6 +338,56 @@ else
     </div>
   </div>
 </div>
+<!-- Modal Renovar-->
+<div class="modal fade" id="renovarModal" tabindex="-1" aria-labelledby="renovarModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="renovarModalLabel">Renovar Contrato</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Ajusta los términos para la renovación del contrato.</p>
+                
+                <form id="renovarForm" asp-action="Renovar" method="post" class="needs-validation" novalidate>
+                    <input type="hidden" id="Id_contrato_original" name="Id_contrato_original">
+                    <input type="hidden" id="Id_inquilino" name="Id_inquilino">
+                    <input type="hidden" id="Id_inmueble" name="Id_inmueble">
+
+                    <div class="mb-3">
+                        <label for="InputMontor" class="form-label">Monto Mensual</label>
+                        <input type="number" class="form-control" id="InputMontor" name="Monto" required>
+                        <div class="invalid-feedback">El Monto es obligatorio.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="InputFecha_desde" class="form-label">Nueva Fecha de Inicio</label>
+                        <input type="date" class="form-control" id="InputFecha_desde" name="Fecha_desde" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="InputMeses" class="form-label">Duración (meses)</label>
+                        <input type="number" class="form-control" id="InputMeses" name="Meses" min="1" value="1" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="InputFecha_hasta" class="form-label">Nueva Fecha de Fin</label>
+                        <input type="date" class="form-control" id="InputFecha_hasta" name="Fecha_hasta" readonly>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="InputMonto_total" class="form-label">Monto Total del Contrato</label>
+                        <input type="text" class="form-control" id="InputMonto_total" name="Monto_total" readonly>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="submit" class="btn btn-primary" form="renovarForm">Confirmar Renovación</button>
+            </div>
+        </div>
+    </div>
+</div>
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         var toastElement = document.getElementById("successToast");
@@ -325,6 +415,7 @@ else
         var myModal = new bootstrap.Modal(document.getElementById('confirmCancelarModal'));
         myModal.show();
     }
+
 const inputEmail = document.getElementById("InputEmailInquilino");
 const hiddenId = document.getElementById("Id_inquilino");
 const dataList = document.getElementById("inquilinoList");
@@ -427,5 +518,80 @@ inputDireccion.addEventListener("change", function () {
             document.getElementById('exampleInputMonto_total').value = '';
             document.getElementById('exampleInputMonto_a_pagar').value = '';
         }
+    }
+//logica de renovar contrato
+// Variables para los elementos del formulario
+    const montoInputr = document.getElementById('InputMontor');
+    const fechaDesdeInput = document.getElementById('InputFecha_desde');
+    const mesesInput = document.getElementById('InputMeses');
+    const fechaHastaInput = document.getElementById('InputFecha_hasta');
+    const montoTotalInput = document.getElementById('InputMonto_total');
+
+    // Función para calcular la fecha de fin
+    function calcularFechaHasta() {
+        if (fechaDesdeInput.value && mesesInput.value) {
+            const fechaDesde = new Date(fechaDesdeInput.value + 'T00:00:00'); // Asegura la zona horaria correcta
+            const meses = parseInt(mesesInput.value, 10);
+            fechaDesde.setMonth(fechaDesde.getMonth() + meses);
+            // Formato YYYY-MM-DD
+            fechaHastaInput.value = fechaDesde.toISOString().split('T')[0];
+        }
+    }
+        // Función para calcular el monto total
+    function calcularMontoTotal() {
+        if (montoInputr.value && mesesInput.value) {
+            const monto = parseFloat(montoInputr.value);
+            const meses = parseInt(mesesInput.value, 10);
+            const total = monto * meses;
+            montoTotalInput.value = total.toFixed(2); // Formato con 2 decimales
+        }
+    }
+
+    // Escuchamos los cambios en los inputs para recalcular en vivo
+    montoInputr.addEventListener('input', calcularMontoTotal);
+    mesesInput.addEventListener('input', () => {
+        calcularFechaHasta();
+        calcularMontoTotal();
+    });
+    fechaDesdeInput.addEventListener('input', calcularFechaHasta);
+    
+    // Tu función, ahora mejorada para buscar datos y poblar el formulario
+    function confirmRenovar(element) {
+        var idContratoOriginal = element.getAttribute("data-id");
+        
+        // Usamos fetch para buscar los datos del contrato original al servidor
+        fetch(`/Contrato/ObtenerDatosParaRenovar/${idContratoOriginal}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('No se pudo obtener los datos del contrato.');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Rellenamos el formulario con los datos obtenidos
+                document.getElementById('Id_contrato_original').value = idContratoOriginal;
+                document.getElementById('Id_inquilino').value = data.id_inquilino;
+                document.getElementById('Id_inmueble').value = data.id_inmueble;
+                
+                // Sugerimos el mismo monto que el contrato anterior
+                montoInputr.value = data.monto;
+
+                // La nueva fecha de inicio es el día después de que terminó el contrato anterior
+                const fechaFinAnterior = new Date(data.fecha_hasta);
+                fechaFinAnterior.setDate(fechaFinAnterior.getDate() + 1);
+                fechaDesdeInput.value = fechaFinAnterior.toISOString().split('T')[0];
+                
+                // Calculamos los valores iniciales
+                calcularFechaHasta();
+                calcularMontoTotal();
+
+                // Mostramos el modal
+                var myModal = new bootstrap.Modal(document.getElementById('renovarModal'));
+                myModal.show();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('No se pudieron cargar los datos para la renovación.');
+            });
     }
 </script>
