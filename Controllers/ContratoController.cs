@@ -101,7 +101,11 @@ public class ContratoController : Controller
                 TempData["Mensaje"] = "Contrato no encontrado.";
                 return RedirectToAction("Index");
             }
-
+            if (contrato.Estado == false)
+            {
+                TempData["Mensaje"] = "Contrato Cancelado no se puede actualuzar.";
+                return RedirectToAction("Index");
+            }
             return View(contrato);
         }
     }
@@ -315,33 +319,88 @@ public class ContratoController : Controller
             contrato.Fecha_hasta
         });
     }
-[HttpPost]
-public IActionResult Renovar(Contratos nuevoContrato, int Id_contrato_original)
-{
-    if (ModelState.IsValid)
+    [HttpPost]
+    public IActionResult Renovar(Contratos nuevoContrato, int Id_contrato_original)
     {
-       
-        var contratoOriginal = repo.BuscarPorId(Id_contrato_original);
-        if (contratoOriginal == null)
+        if (ModelState.IsValid)
         {
-            TempData["Mensaje"] = "Contrato no encontrado.";
-            return RedirectToAction("Index");
-        }
-        if (contratoOriginal.Contrato_completado == false)
-        {
+
+            var contratoOriginal = repo.BuscarPorId(Id_contrato_original);
+            if (contratoOriginal == null)
+            {
+                TempData["Mensaje"] = "Contrato no encontrado.";
+                return RedirectToAction("Index");
+            }
+            if (contratoOriginal.Estado == false)
+            {
+                TempData["Mensaje"] = "Contrato Cancelado no se puede renovar.";
+                return RedirectToAction("Index");
+            }
+            if (contratoOriginal.Contrato_completado == false)
+            {
                 TempData["Mensaje"] = "Contrato no esta completado.";
+                return RedirectToAction("Index");
+            }
+            if (contratoOriginal != null)
+            {
+                contratoOriginal.Estado = false;
+                repo.ActualizarContrato(contratoOriginal);
+            }
+            // 2. Crear y guardar el nuevo contrato (renovación)
+            nuevoContrato.Estado = true;
+            nuevoContrato.Creado_por = User.Identity?.Name ?? "Sistema";
+            nuevoContrato.Monto_a_pagar = nuevoContrato.Monto_total;
+            repo.AgregarContrato(nuevoContrato);
+
+            TempData["Mensaje"] = "Contrato renovado exitosamente.";
             return RedirectToAction("Index");
         }
-        // 2. Crear y guardar el nuevo contrato (renovación)
-            nuevoContrato.Estado = true;
-        nuevoContrato.Monto_a_pagar = nuevoContrato.Monto_total; 
-        repo.AgregarContrato(nuevoContrato);
 
-        TempData["Mensaje"] = "Contrato renovado exitosamente.";
-        return RedirectToAction("Index");
+        TempData["Mensaje"] = "Hubo un error al renovar el contrato.";
+        return RedirectToAction("Index"); // O devolver a la vista con errores
     }
+[HttpPost]
+public IActionResult Actualizar(Contratos Contrato)
+{ 
+if (ModelState.IsValid)
+        {
+            var contratoOriginal = repo.BuscarPorId(Contrato.Id_contrato);
+            if (contratoOriginal == null)
+            {
+                TempData["Mensaje"] = "Contrato no encontrado.";
+                return RedirectToAction("Index");
+            }
+            if (contratoOriginal.Estado == false)
+            {
+                TempData["Mensaje"] = "Contrato Cancelado no se puede actualuzar.";
+                return RedirectToAction("Index");
+            }
+            var inmueble = repoInmuebles.ObtenerPorID(Contrato.Id_inmueble);
+            if (inmueble == null)
+            {
+                TempData["Mensaje"] = "El inmueble seleccionado no existe.";
+                return View(Contrato);
+            }
+            var contratosExistentes = repo.ObtenerContratosActivosPorInmueble(Contrato.Id_inmueble);
+            foreach (var existente in contratosExistentes)
+            {
+                if ((Contrato.Fecha_desde <= existente.Fecha_hasta) && (Contrato.Fecha_hasta >= existente.Fecha_desde))
+                {
 
-    TempData["Mensaje"] = "Hubo un error al renovar el contrato.";
-    return RedirectToAction("Index"); // O devolver a la vista con errores
-}
+                    TempData["Mensaje"] = $"El inmueble ya se encuentra alquilado entre {existente.Fecha_desde:dd/MM/yyyy} y {existente.Fecha_hasta:dd/MM/yyyy}.";
+                    return RedirectToAction("Index");
+                }
+            }
+            if (contratoOriginal != null)
+            {
+                Contrato.Estado = true;
+                repo.ActualizarContrato(Contrato);
+            }
+            TempData["Mensaje"] = "Contrato actualizado exitosamente.";
+            return RedirectToAction("Index");
+        }
+
+        TempData["Mensaje"] = "Hubo un error al actualizar el contrato.";
+        return RedirectToAction("Index"); // O devolver a la vista con errores
+    }
 }

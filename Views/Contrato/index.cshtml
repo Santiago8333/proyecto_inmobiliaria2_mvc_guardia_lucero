@@ -145,11 +145,6 @@
             <i class="bi bi-three-dots-vertical"></i> <!-- Icono de 3 puntos -->
         </button>
         <ul class="dropdown-menu">
-            <li>
-                <a class="dropdown-item" asp-action="Edicion" asp-route-id="@p.Id_contrato" title="Editar">
-                     <i class="fa-solid fa-pencil"></i> Modificar
-                </a>
-            </li>
              <li>
                 <a class="dropdown-item" asp-action="Detalle" asp-route-id="@p.Id_contrato" title="Detalle">
                      <i class="fa-solid fa-book"></i> Detalle
@@ -351,8 +346,8 @@ else
                 
                 <form id="renovarForm" asp-action="Renovar" method="post" class="needs-validation" novalidate>
                     <input type="hidden" id="Id_contrato_original" name="Id_contrato_original">
-                    <input type="hidden" id="Id_inquilino" name="Id_inquilino">
-                    <input type="hidden" id="Id_inmueble" name="Id_inmueble">
+                    <input type="hidden" id="Id_inquilinor" name="Id_inquilino">
+                    <input type="hidden" id="Id_inmuebler" name="Id_inmueble">
 
                     <div class="mb-3">
                         <label for="InputMontor" class="form-label">Monto Mensual</label>
@@ -570,8 +565,8 @@ inputDireccion.addEventListener("change", function () {
             .then(data => {
                 // Rellenamos el formulario con los datos obtenidos
                 document.getElementById('Id_contrato_original').value = idContratoOriginal;
-                document.getElementById('Id_inquilino').value = data.id_inquilino;
-                document.getElementById('Id_inmueble').value = data.id_inmueble;
+                document.getElementById('Id_inquilinor').value = data.id_inquilino;
+                document.getElementById('Id_inmuebler').value = data.id_inmueble;
                 
                 // Sugerimos el mismo monto que el contrato anterior
                 montoInputr.value = data.monto;

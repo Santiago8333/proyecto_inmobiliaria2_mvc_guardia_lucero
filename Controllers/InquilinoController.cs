@@ -38,6 +38,7 @@ public class InquilinoController : Controller
             }
             else
             {
+                inquilino.Creado_por = User.Identity?.Name ?? "Sistema";
                 TempData["Mensaje"] = "Inquilino agregado exitosamente.";
                 repo.AgregarInquilino(inquilino);
                 return RedirectToAction("Index");
@@ -46,7 +47,7 @@ public class InquilinoController : Controller
         TempData["Mensaje"] = "Error al agregar.";
         return View(inquilino);
     }
-
+ [Authorize(Policy = "Administrador")]
 public IActionResult Eliminar(int id)
 {
   var inquilino = repo.ObtenerPorID(id);

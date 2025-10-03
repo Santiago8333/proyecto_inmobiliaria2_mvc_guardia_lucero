@@ -12,7 +12,7 @@ public class Inquilinos
     public string Email {get;set;} = "";
 
     public string Telefono {get;set;} = "";
-
+    public string? Creado_por { get; set; } = "";
     public DateTime Fecha_creacion { get; set; }
 
 }

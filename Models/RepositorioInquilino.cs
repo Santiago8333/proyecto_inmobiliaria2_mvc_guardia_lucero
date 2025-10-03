@@ -12,7 +12,7 @@ public class RepositorioInquilino
         List<Inquilinos> inquilinos = new List<Inquilinos>();
         using (MySqlConnection connection = new MySqlConnection(ConectionString))
         {
-            var query = @"SELECT Id_inquilino, Dni, Apellido, Nombre, Email, Telefono, Fecha_creacion
+            var query = @"SELECT Id_inquilino, Dni, Apellido, Nombre, Email, Telefono,Creado_por, Fecha_creacion
                       FROM inquilinos
                       ORDER BY Id_inquilino
                       LIMIT @limit OFFSET @offset";
@@ -34,6 +34,9 @@ public class RepositorioInquilino
                         Nombre = reader.GetString(nameof(Inquilinos.Nombre)),
                         Email = reader.GetString(nameof(Inquilinos.Email)),
                         Telefono = reader.GetString(nameof(Inquilinos.Telefono)),
+                        Creado_por = reader.IsDBNull(reader.GetOrdinal(nameof(Inquilinos.Creado_por))) 
+                            ? null 
+                            : reader.GetString(nameof(Inquilinos.Creado_por)),
                         Fecha_creacion = reader.GetDateTime(nameof(Inquilinos.Fecha_creacion)),
                     });
                 }
@@ -58,8 +61,8 @@ public class RepositorioInquilino
 
         using (MySqlConnection connection = new MySqlConnection(ConectionString))
         {
-            var query = $@"INSERT INTO inquilinos ({nameof(Inquilinos.Dni)}, {nameof(Inquilinos.Apellido)}, {nameof(Inquilinos.Nombre)}, {nameof(Inquilinos.Email)}, {nameof(Inquilinos.Telefono)})
-                    VALUES (@Dni, @Apellido, @Nombre,@Email,@Telefono)";
+            var query = $@"INSERT INTO inquilinos ({nameof(Inquilinos.Dni)}, {nameof(Inquilinos.Apellido)}, {nameof(Inquilinos.Nombre)}, {nameof(Inquilinos.Email)}, {nameof(Inquilinos.Telefono)},{nameof(Inquilinos.Creado_por)})
+                    VALUES (@Dni, @Apellido, @Nombre,@Email,@Telefono,@Creado_por)";
 
             using (MySqlCommand command = new MySqlCommand(query, connection))
             {
@@ -69,7 +72,7 @@ public class RepositorioInquilino
                 command.Parameters.AddWithValue("@Nombre", nuevoInquilino.Nombre);
                 command.Parameters.AddWithValue("@Email", nuevoInquilino.Email);
                 command.Parameters.AddWithValue("@Telefono", nuevoInquilino.Telefono);
-
+                command.Parameters.AddWithValue("@Creado_por", nuevoInquilino.Creado_por);
 
                 connection.Open();
                 command.ExecuteNonQuery(); // Ejecuta la consulta de inserción

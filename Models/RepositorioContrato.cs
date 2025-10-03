@@ -199,7 +199,8 @@ public class RepositorioContrato : RepositorioBase
                 {nameof(Contratos.Fecha_desde)} = @Fecha_desde,
                 {nameof(Contratos.Fecha_hasta)} = @Fecha_hasta,
                 {nameof(Contratos.Fecha_final)} = @Fecha_final,
-                {nameof(Contratos.Meses)} = @Meses
+                {nameof(Contratos.Meses)} = @Meses,
+                {nameof(Contratos.Estado)} = @Estado
             WHERE {nameof(Contratos.Id_contrato)} = @Id_contrato";
 
             using (MySqlCommand command = new MySqlCommand(query, connection))
@@ -214,7 +215,7 @@ public class RepositorioContrato : RepositorioBase
                 command.Parameters.AddWithValue("@Fecha_hasta", contrato.Fecha_hasta);
                 command.Parameters.AddWithValue("@Fecha_final", (object?)contrato.Fecha_final ?? DBNull.Value);
                 command.Parameters.AddWithValue("@Meses", contrato.Meses);
-
+                command.Parameters.AddWithValue("@Estado", contrato.Estado);
                 connection.Open();
                 command.ExecuteNonQuery();
                 connection.Close();
