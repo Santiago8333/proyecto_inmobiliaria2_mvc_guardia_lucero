@@ -46,7 +46,7 @@ public class PropietarioController : Controller
             else
             {
                 TempData["Mensaje"] = "Propietario agregado exitosamente.";
-
+                propietario.Creado_por = User.Identity?.Name ?? "Sistema"; 
                 repo.AgregarPropietario(propietario);
                 return RedirectToAction("Index");
             }
@@ -86,7 +86,7 @@ public class PropietarioController : Controller
         TempData["Mensaje"] = "Hubo un error al Modificar el Propietario.";
         return RedirectToAction("Index");
     }
-
+    [Authorize(Policy = "Administrador")]
     public IActionResult Eliminar(int id)
     {
         var propietario = repo.ObtenerPorID(id);

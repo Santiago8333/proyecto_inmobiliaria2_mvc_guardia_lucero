@@ -17,6 +17,10 @@
     <th scope="col">Apellido</th>
     <th scope="col">Telefono</th>
     <th scope="col">Fecha de Creacion</th>
+    @if (User.IsInRole("Administrador"))
+    {
+    <th scope="col">Creado por</th>
+    }
     <th scope="col">Accion</th>
     </tr>
 </thead>
@@ -34,6 +38,10 @@
             <td>@Html.DisplayFor(modelp => p.Apellido)</td>
             <td>@Html.DisplayFor(modelp => p.Telefono)</td>
             <td>@p.Fecha_creacion.ToString("dd/MM/yyyy")</td>
+            @if (User.IsInRole("Administrador"))
+            {
+              <td>@Html.DisplayFor(modelp => p.Creado_por)</td>
+            }
             <td>
     <div class="dropdown position-static">
         <button class="btn btn-sm btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -45,6 +53,8 @@
                      <i class="fa-solid fa-pencil"></i> Modificar
                 </a>
             </li>
+            @if (User.IsInRole("Administrador"))
+            {
             <li>
                 <a href="javascript:void(0);" 
                       data-id="@p.Id_propietario" 
@@ -53,6 +63,7 @@
                         <i class="fa-solid fa-trash"></i> Eliminar
                   </a>
             </li>
+            }
         </ul>
     </div>
 </td>

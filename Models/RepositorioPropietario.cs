@@ -49,8 +49,8 @@ namespace proyecto_inmobiliaria2_mvc_guardia_lucero.Models
 
             using (MySqlConnection connection = new MySqlConnection(ConectionString))
             {
-                var query = $@"INSERT INTO propietarios ({nameof(Propietarios.Dni)}, {nameof(Propietarios.Apellido)}, {nameof(Propietarios.Nombre)}, {nameof(Propietarios.Email)}, {nameof(Propietarios.Telefono)})
-                    VALUES (@Dni, @Apellido, @Nombre,@Email,@Telefono)";
+                var query = $@"INSERT INTO propietarios ({nameof(Propietarios.Dni)}, {nameof(Propietarios.Apellido)}, {nameof(Propietarios.Nombre)}, {nameof(Propietarios.Email)}, {nameof(Propietarios.Telefono)},{nameof(Propietarios.Creado_por)})
+                    VALUES (@Dni, @Apellido, @Nombre,@Email,@Telefono,@Creado_por)";
 
                 using (MySqlCommand command = new MySqlCommand(query, connection))
                 {
@@ -60,7 +60,7 @@ namespace proyecto_inmobiliaria2_mvc_guardia_lucero.Models
                     command.Parameters.AddWithValue("@Nombre", nuevoPropietario.Nombre);
                     command.Parameters.AddWithValue("@Email", nuevoPropietario.Email);
                     command.Parameters.AddWithValue("@Telefono", nuevoPropietario.Telefono);
-
+                    command.Parameters.AddWithValue("@Creado_por", nuevoPropietario.Creado_por);
 
                     connection.Open();
                     command.ExecuteNonQuery(); // Ejecuta la consulta de inserción
@@ -74,7 +74,7 @@ namespace proyecto_inmobiliaria2_mvc_guardia_lucero.Models
             List<Propietarios> propietarios = new List<Propietarios>();
             using (MySqlConnection connection = new MySqlConnection(ConectionString))
             {
-                var query = @"SELECT Id_propietario, Dni, Apellido, Nombre, Email, Telefono, Fecha_creacion
+                var query = @"SELECT Id_propietario, Dni, Apellido, Nombre, Email, Telefono, Fecha_creacion,Creado_por
                       FROM propietarios
                       ORDER BY Id_propietario
                       LIMIT @limit OFFSET @offset";
@@ -97,6 +97,9 @@ namespace proyecto_inmobiliaria2_mvc_guardia_lucero.Models
                             Email = reader.GetString(nameof(Propietarios.Email)),
                             Telefono = reader.GetString(nameof(Propietarios.Telefono)),
                             Fecha_creacion = reader.GetDateTime(nameof(Propietarios.Fecha_creacion)),
+                            Creado_por = reader.IsDBNull(reader.GetOrdinal(nameof(Propietarios.Creado_por))) 
+                            ? null 
+                            : reader.GetString(nameof(Propietarios.Creado_por)),
                         });
                     }
                 }
