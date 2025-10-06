@@ -74,6 +74,87 @@ public class RepositorioInmueble : RepositorioBase
         }
         return inmuebles;
     }
+    public List<Inmuebles> ObtenerPaginadosFiltrados(string? email, bool? estado, int pagina, int tamanoPagina)
+{
+    List<Inmuebles> inmuebles = new List<Inmuebles>();
+    using (MySqlConnection connection = new MySqlConnection(ConectionString))
+    {
+        // Usamos StringBuilder para construir la consulta dinámicamente
+        var sqlBuilder = new System.Text.StringBuilder(@"
+            SELECT i.Id_inmueble, i.Id_propietario, p.Email, i.Uso, i.Tipo, 
+                   i.Direccion, i.Ambiente, i.Precio, i.Longitud, i.Latitud, 
+                   i.Fecha_creacion, i.Estado, i.Portada, i.Creado_por, i.Desactivado_por
+            FROM inmuebles i
+            JOIN propietarios p ON i.Id_propietario = p.Id_propietario");
+
+        var whereClauses = new List<string>();
+        
+        
+        using (MySqlCommand command = new MySqlCommand())
+        {
+            
+            if (!string.IsNullOrEmpty(email))
+            {
+                whereClauses.Add("p.Email LIKE @email");
+                command.Parameters.AddWithValue("@email", $"%{email}%"); 
+            }
+
+           
+            if (estado.HasValue)
+            {
+                whereClauses.Add("i.Estado = @estado");
+                command.Parameters.AddWithValue("@estado", estado.Value);
+            }
+
+            
+            if (whereClauses.Any())
+            {
+                sqlBuilder.Append(" WHERE ").Append(string.Join(" AND ", whereClauses));
+            }
+
+            // Añadimos el orden y la paginación al final
+            sqlBuilder.Append(" ORDER BY i.Id_inmueble LIMIT @limit OFFSET @offset");
+            command.Parameters.AddWithValue("@limit", tamanoPagina);
+            command.Parameters.AddWithValue("@offset", (pagina - 1) * tamanoPagina);
+            
+            
+            command.CommandText = sqlBuilder.ToString();
+            command.Connection = connection;
+
+            connection.Open();
+            var reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                inmuebles.Add(new Inmuebles
+                {
+                    Id_inmueble = reader.GetInt32(nameof(Inmuebles.Id_inmueble)),
+                        Id_propietario = reader.GetInt32(nameof(Inmuebles.Id_propietario)),
+                        EmailPropietario = reader.GetString("Email"),
+                        Uso = reader.GetString(nameof(Inmuebles.Uso)),
+                        Tipo = reader.GetString(nameof(Inmuebles.Tipo)),
+                        Direccion = reader.GetString(nameof(Inmuebles.Direccion)),
+                        Ambiente = reader.GetInt32(nameof(Inmuebles.Ambiente)),
+                        Precio = reader.GetDecimal(nameof(Inmuebles.Precio)),
+                        Longitud = reader.GetDouble(nameof(Inmuebles.Longitud)),
+                        Latitud = reader.GetDouble(nameof(Inmuebles.Latitud)),
+                        Fecha_creacion = reader.GetDateTime(nameof(Inmuebles.Fecha_creacion)),
+                        Portada = reader.IsDBNull(reader.GetOrdinal(nameof(Inmuebles.Portada))) 
+                                    ? null 
+                                    : reader.GetString(nameof(Inmuebles.Portada)),
+                        Estado = reader.GetBoolean(nameof(Inmuebles.Estado)),
+                        Creado_por = reader.IsDBNull(reader.GetOrdinal(nameof(Inmuebles.Creado_por))) 
+                            ? null 
+                            : reader.GetString(nameof(Inmuebles.Creado_por)),
+
+                        Desactivado_por = reader.IsDBNull(reader.GetOrdinal(nameof(Inmuebles.Desactivado_por))) 
+                            ? null 
+                            : reader.GetString(nameof(Inmuebles.Desactivado_por)),
+                });
+            }
+        }
+    }
+    return inmuebles;
+}
     public int ContarInmuebles()
     {
         using (var connection = new MySqlConnection(ConectionString))
@@ -86,6 +167,45 @@ public class RepositorioInmueble : RepositorioBase
             }
         }
     }
+        public int ContarFiltrados(string? email, bool? estado)
+    {
+        using (var connection = new MySqlConnection(ConectionString))
+        {
+            var sql = new System.Text.StringBuilder(@"
+                SELECT COUNT(*)
+                FROM inmuebles i
+                JOIN propietarios p ON i.Id_propietario = p.Id_propietario");
+
+            var whereClauses = new List<string>();
+            var parameters = new MySql.Data.MySqlClient.MySqlCommand();
+
+            // LA MISMA LÓGICA DE FILTROS QUE EL MÉTODO ANTERIOR
+            if (!string.IsNullOrEmpty(email))
+            {
+                whereClauses.Add("p.Email LIKE @email");
+                parameters.Parameters.AddWithValue("@email", $"%{email}%");
+            }
+
+            if (estado.HasValue)
+            {
+                whereClauses.Add("i.Estado = @estado");
+                parameters.Parameters.AddWithValue("@estado", estado.Value);
+            }
+
+            if (whereClauses.Any())
+            {
+                sql.Append(" WHERE ").Append(string.Join(" AND ", whereClauses));
+            }
+            
+            parameters.Connection = connection;
+            parameters.CommandText = sql.ToString();
+
+            connection.Open();
+            // ExecuteScalar se usa para obtener un único valor (como un conteo)
+            return Convert.ToInt32(parameters.ExecuteScalar());
+        }
+    }
+
     public List<Propietarios> ObtenerTodosPropietarios()
     {
         List<Propietarios> propietarios = new List<Propietarios>();

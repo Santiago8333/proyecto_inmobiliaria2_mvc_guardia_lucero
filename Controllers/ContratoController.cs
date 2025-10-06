@@ -17,11 +17,15 @@ public class ContratoController : Controller
         this.config = config;
         this.repoInmuebles = repoInmuebles;
     }
-    public IActionResult Index(int pagina = 1, int tamanoPagina = 5)
+    public IActionResult Index(DateTime? fechaInicio, DateTime? fechaFin, string? email,int? expiracion,int pagina = 1, int tamanoPagina = 5)
     {
-        var listaContratos = repo.ObtenerPaginados(pagina, tamanoPagina);
+        ViewBag.FechaInicioFilter = fechaInicio;
+        ViewBag.FechaFinFilter = fechaFin;
+        ViewBag.EmailFilter = email;
+        ViewBag.ExpiracionFilter = expiracion;
+        var listaContratos = repo.ObtenerPaginadosFiltrados(fechaInicio, fechaFin, email,expiracion,pagina, tamanoPagina);
 
-        int totalRegistros = repo.ContarContrato();
+        int totalRegistros = repo.ContarFiltrados(fechaInicio, fechaFin, email,expiracion);
         ViewBag.PaginaActual = pagina;
         ViewBag.TotalPaginas = (int)Math.Ceiling((double)totalRegistros / tamanoPagina);
         ViewBag.Registros = totalRegistros > 0;

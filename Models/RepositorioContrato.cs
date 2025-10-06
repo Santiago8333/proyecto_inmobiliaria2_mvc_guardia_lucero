@@ -92,6 +92,148 @@ public class RepositorioContrato : RepositorioBase
             }
         }
     }
+    public List<Contratos> ObtenerPaginadosFiltrados(DateTime? fechaInicio, DateTime? fechaFin, string? email,int? expiracion, int pagina, int tamanoPagina)
+{
+    List<Contratos> contratos = new List<Contratos>();
+    using (MySqlConnection connection = new MySqlConnection(ConectionString))
+    {
+        var sqlBuilder = new System.Text.StringBuilder(@"
+            SELECT c.Id_contrato, c.Id_inquilino, c.Id_inmueble, c.Contrato_completado, 
+                   c.Monto, c.Monto_total, c.Monto_a_pagar, c.Fecha_creacion, c.Fecha_desde, 
+                   c.Fecha_hasta, c.Fecha_final, c.Meses, c.Creado_por, c.Terminado_por, c.Estado,
+                   i.Direccion AS DireccionInmueble, q.Email AS EmailInquilino
+            FROM contratos c
+            JOIN inmuebles i ON c.Id_inmueble = i.Id_inmueble
+            JOIN inquilinos q ON c.Id_inquilino = q.Id_inquilino");
+
+        var whereClauses = new List<string>();
+        
+        using (MySqlCommand command = new MySqlCommand())
+        {
+
+           
+            if (!string.IsNullOrEmpty(email))
+            {
+                whereClauses.Add("q.Email LIKE @email");
+                command.Parameters.AddWithValue("@email", $"%{email}%");
+            }
+
+            
+            if (fechaInicio.HasValue)
+            {
+    
+                whereClauses.Add("c.Fecha_hasta >= @fechaInicio");
+                command.Parameters.AddWithValue("@fechaInicio", fechaInicio.Value);
+            }
+
+          
+            if (fechaFin.HasValue)
+            {
+              
+                whereClauses.Add("c.Fecha_desde <= @fechaFin");
+                command.Parameters.AddWithValue("@fechaFin", fechaFin.Value);
+            }
+            if (expiracion.HasValue && expiracion > 0)
+            {
+                // La cláusula WHERE para buscar contratos que:
+                // 1. Terminen DESPUÉS de hoy.
+                // 2. Terminen ANTES de "hoy + X días".
+                whereClauses.Add("c.Fecha_hasta BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL @expiracion DAY)");
+                command.Parameters.AddWithValue("@expiracion", expiracion.Value);
+            }
+
+            if (whereClauses.Any())
+                {
+                    sqlBuilder.Append(" WHERE ").Append(string.Join(" AND ", whereClauses));
+                }
+
+            sqlBuilder.Append(" ORDER BY c.Id_contrato LIMIT @limit OFFSET @offset");
+            command.Parameters.AddWithValue("@limit", tamanoPagina);
+            command.Parameters.AddWithValue("@offset", (pagina - 1) * tamanoPagina);
+            
+            command.CommandText = sqlBuilder.ToString();
+            command.Connection = connection;
+
+            connection.Open();
+            var reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+      
+                contratos.Add(new Contratos { Id_contrato = reader.GetInt32(nameof(Contratos.Id_contrato)),
+                        Id_inquilino = reader.GetInt32(nameof(Contratos.Id_inquilino)),
+                        Id_inmueble = reader.GetInt32(nameof(Contratos.Id_inmueble)),
+                        Contrato_completado = reader.GetBoolean(nameof(Contratos.Contrato_completado)),
+                        Monto = reader.GetDecimal(nameof(Contratos.Monto)),
+                        Monto_total = reader.GetDecimal(nameof(Contratos.Monto_total)),
+                        Monto_a_pagar = reader.GetDecimal(nameof(Contratos.Monto_a_pagar)),
+                        Fecha_creacion = reader.GetDateTime(nameof(Contratos.Fecha_creacion)),
+                        Fecha_desde = reader.GetDateTime(nameof(Contratos.Fecha_desde)),
+                        Fecha_hasta = reader.GetDateTime(nameof(Contratos.Fecha_hasta)),
+                        Fecha_final = reader.IsDBNull(reader.GetOrdinal("Fecha_final"))
+                                        ? (DateTime?)null
+                                        : reader.GetDateTime("Fecha_final"),
+                        Creado_por = reader.IsDBNull(reader.GetOrdinal(nameof(Contratos.Creado_por))) 
+                            ? null 
+                            : reader.GetString(nameof(Contratos.Creado_por)),
+
+                        Terminado_por = reader.IsDBNull(reader.GetOrdinal(nameof(Contratos.Terminado_por))) 
+                            ? null 
+                            : reader.GetString(nameof(Contratos.Terminado_por)),
+                        Meses = reader.GetInt32(nameof(Contratos.Meses)),
+                        Estado = reader.GetBoolean(nameof(Contratos.Estado)),
+                        DireccionInmueble = reader.GetString("DireccionInmueble"),
+                        EmailInquilino = reader.GetString("EmailInquilino")});
+            }
+        }
+    }
+    return contratos;
+}
+
+
+public int ContarFiltrados(DateTime? fechaInicio, DateTime? fechaFin, string? email,int? expiracion)
+{
+    using (var connection = new MySqlConnection(ConectionString))
+    {
+        var sqlBuilder = new System.Text.StringBuilder(@"
+            SELECT COUNT(*) FROM contratos c
+            JOIN inquilinos q ON c.Id_inquilino = q.Id_inquilino");
+
+        var whereClauses = new List<string>();
+        using (var command = new MySqlCommand())
+        {
+            
+            if (!string.IsNullOrEmpty(email))
+            {
+                whereClauses.Add("q.Email LIKE @email");
+                command.Parameters.AddWithValue("@email", $"%{email}%");
+            }
+            if (fechaInicio.HasValue)
+            {
+                whereClauses.Add("c.Fecha_hasta >= @fechaInicio");
+                command.Parameters.AddWithValue("@fechaInicio", fechaInicio.Value);
+            }
+            if (fechaFin.HasValue)
+            {
+                whereClauses.Add("c.Fecha_desde <= @fechaFin");
+                command.Parameters.AddWithValue("@fechaFin", fechaFin.Value);
+            }
+            if (expiracion.HasValue && expiracion > 0)
+            {
+                whereClauses.Add("c.Fecha_hasta BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL @expiracion DAY)");
+                command.Parameters.AddWithValue("@expiracion", expiracion.Value);
+            }
+            if (whereClauses.Any())
+            {
+                sqlBuilder.Append(" WHERE ").Append(string.Join(" AND ", whereClauses));
+            }
+
+            command.CommandText = sqlBuilder.ToString();
+            command.Connection = connection;
+            connection.Open();
+            return Convert.ToInt32(command.ExecuteScalar());
+        }
+    }
+}
     public void AgregarContrato(Contratos nuevoContrato)
     {
 
