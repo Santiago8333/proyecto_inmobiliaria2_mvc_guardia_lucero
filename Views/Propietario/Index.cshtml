@@ -6,6 +6,16 @@
 <div class="row">
 <div class="col-md-12 history bg-light border-right">
 <h1>Propietarios</h1>
+<form asp-action="Index" method="get" class="row g-3 mb-4">
+    <div class="col-md-4">
+        <label for="email" class="form-label">Email del Propietario</label>
+        <input type="text" name="email" id="email" class="form-control" value="@ViewBag.EmailFilter" placeholder="ejemplo@dominio.com">
+    </div>
+    <div class="col-md-4 d-flex align-items-end">
+        <button type="submit" class="btn btn-primary me-2">Filtrar</button>
+        <a asp-action="Index" class="btn btn-secondary">Limpiar</a>
+    </div>
+</form>
 <div class="table-responsive">
 <table class="table table-hover table-sm">
 <thead>
@@ -17,6 +27,7 @@
     <th scope="col">Apellido</th>
     <th scope="col">Telefono</th>
     <th scope="col">Fecha de Creacion</th>
+    <th scope="col">Estado</th>
     @if (User.IsInRole("Administrador"))
     {
     <th scope="col">Creado por</th>
@@ -30,6 +41,7 @@
     int i = 1;
     foreach (var p in Model)
     {
+      if(p.Estado){
         <tr>
             <td>@i</td>
             <td>@Html.DisplayFor(modelp => p.Dni)</td>
@@ -38,6 +50,7 @@
             <td>@Html.DisplayFor(modelp => p.Apellido)</td>
             <td>@Html.DisplayFor(modelp => p.Telefono)</td>
             <td>@p.Fecha_creacion.ToString("dd/MM/yyyy")</td>
+            <td>@(p.Estado ? "Activo" : "Desactivado")</td>
             @if (User.IsInRole("Administrador"))
             {
               <td>@Html.DisplayFor(modelp => p.Creado_por)</td>
@@ -52,6 +65,14 @@
                 <a class="dropdown-item" asp-action="Edicion" asp-route-id="@p.Id_propietario" title="Editar">
                      <i class="fa-solid fa-pencil"></i> Modificar
                 </a>
+            </li>
+            <li>
+                <a href="javascript:void(0);" 
+                      data-id="@p.Id_propietario" 
+                      class="dropdown-item" 
+                      onclick="confirmDesactivar(this)">
+                        <i class="fa-solid fa-x"></i> Desactivar
+                  </a>
             </li>
             @if (User.IsInRole("Administrador"))
             {
@@ -69,6 +90,57 @@
 </td>
         </tr>
         i++;
+        }else
+        {
+            <tr class="table-danger">
+            <td>@i</td>
+            <td>@Html.DisplayFor(modelp => p.Dni)</td>
+            <td>@Html.DisplayFor(modelp => p.Email)</td>
+            <td>@Html.DisplayFor(modelp => p.Nombre)</td>
+            <td>@Html.DisplayFor(modelp => p.Apellido)</td>
+            <td>@Html.DisplayFor(modelp => p.Telefono)</td>
+            <td>@p.Fecha_creacion.ToString("dd/MM/yyyy")</td>
+            <td>@(p.Estado ? "Activo" : "Desactivado")</td>
+            @if (User.IsInRole("Administrador"))
+            {
+              <td>@Html.DisplayFor(modelp => p.Creado_por)</td>
+            }
+            <td>
+            <div class="dropdown position-static">
+                <button class="btn btn-sm btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-three-dots-vertical"></i> <!-- Icono de 3 puntos -->
+                </button>
+                <ul class="dropdown-menu">
+                    <li>
+                        <a class="dropdown-item" asp-action="Edicion" asp-route-id="@p.Id_propietario" title="Editar">
+                            <i class="fa-solid fa-pencil"></i> Modificar
+                        </a>
+                    </li>
+                    <li>
+                    <a href="javascript:void(0);" 
+                            data-id="@p.Id_propietario" 
+                            class="dropdown-item" 
+                            onclick="confirmActivate(this)">
+                            <i class="fa-solid fa-check"></i> Activar
+                        </a>
+                  </li>
+                    @if (User.IsInRole("Administrador"))
+                    {
+                    <li>
+                        <a href="javascript:void(0);" 
+                              data-id="@p.Id_propietario" 
+                              class="dropdown-item" 
+                              onclick="confirmDelete(this)">
+                                <i class="fa-solid fa-trash"></i> Eliminar
+                          </a>
+                    </li>
+                    }
+                </ul>
+            </div>
+        </td>
+        </tr>
+        i++;
+        }
     }
 }
 else
@@ -193,6 +265,42 @@ else
     </div>
   </div>
 </div>
+<!-- Modal desactivar-->
+<div class="modal fade" id="confirmDesactivarModal" tabindex="-1" aria-labelledby="confirmDesactivarModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="confirmDesactivarModalLabel">Confirmar Desactivar</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        ¿Estás seguro de que deseas Desactivar este propietario?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <a id="confirmDesactivarButton" href="#" class="btn btn-danger">Desactivar</a>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Modal activar-->
+<div class="modal fade" id="confirmActivarModal" tabindex="-1" aria-labelledby="confirmActivarModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="confirmActivarModalLabel">Confirmar Activar</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        ¿Estás seguro de que deseas Activar este propietario?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <a id="confirmActivarButton" href="#" class="btn btn-danger">Activar</a>
+      </div>
+    </div>
+  </div>
+</div>
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         var toastElement = document.getElementById("successToast");
@@ -211,6 +319,20 @@ else
         var url = "@Url.Action("Eliminar", "Propietario")" + "/" + id;
         document.getElementById("confirmDeleteButton").setAttribute("href", url);
         var myModal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
+        myModal.show();
+    }
+    function confirmDesactivar(element) {
+        var id = element.getAttribute("data-id");
+        var url = "@Url.Action("Desactivar", "Propietario")" + "/" + id;
+        document.getElementById("confirmDesactivarButton").setAttribute("href", url);
+        var myModal = new bootstrap.Modal(document.getElementById('confirmDesactivarModal'));
+        myModal.show();
+    }
+    function confirmActivate(element) {
+        var id = element.getAttribute("data-id");
+        var url = "@Url.Action("Activar", "Propietario")" + "/" + id;
+        document.getElementById("confirmActivarButton").setAttribute("href", url);
+        var myModal = new bootstrap.Modal(document.getElementById('confirmActivarModal'));
         myModal.show();
     }
 

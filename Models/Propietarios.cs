@@ -15,5 +15,6 @@ public class Propietarios
 
     public DateTime Fecha_creacion { get; set; }
     public string? Creado_por { get; set; } = "";
+    public Boolean Estado { get; set; }
 
 }

@@ -471,13 +471,13 @@ public int ContarFiltrados(string? email, bool? estado, DateTime? fechaInicio, D
             }
         }
     }
-public List<Inmuebles> ObtenerInmueblesDisponibles(DateTime fechaInicio, DateTime fechaFin)
-{
-    var lista = new List<Inmuebles>();
-    using (var connection = new MySqlConnection(ConectionString))
+    public List<Inmuebles> ObtenerInmueblesDisponibles(DateTime fechaInicio, DateTime fechaFin)
     {
-       
-        var query = @"
+        var lista = new List<Inmuebles>();
+        using (var connection = new MySqlConnection(ConectionString))
+        {
+
+            var query = @"
             SELECT * FROM inmuebles
             WHERE Activo = 1 AND Id_inmueble NOT IN (
                 -- ... que no estén en esta subconsulta de inmuebles ocupados.
@@ -488,27 +488,28 @@ public List<Inmuebles> ObtenerInmueblesDisponibles(DateTime fechaInicio, DateTim
                   AND (Fecha_hasta >= @fechaInicio)
             )";
 
-        using (var command = new MySqlCommand(query, connection))
-        {
-            command.Parameters.AddWithValue("@fechaInicio", fechaInicio);
-            command.Parameters.AddWithValue("@fechaFin", fechaFin);
-            connection.Open();
-            using (var reader = command.ExecuteReader())
+            using (var command = new MySqlCommand(query, connection))
             {
-                while (reader.Read())
+                command.Parameters.AddWithValue("@fechaInicio", fechaInicio);
+                command.Parameters.AddWithValue("@fechaFin", fechaFin);
+                connection.Open();
+                using (var reader = command.ExecuteReader())
                 {
-                    
-                    lista.Add(new Inmuebles
+                    while (reader.Read())
                     {
-                        Id_inmueble = reader.GetInt32("Id_inmueble"),
-                        Direccion = reader.GetString("Direccion"),
-                        Precio = reader.GetDecimal("Precio"),
-                       
-                    });
+
+                        lista.Add(new Inmuebles
+                        {
+                            Id_inmueble = reader.GetInt32("Id_inmueble"),
+                            Direccion = reader.GetString("Direccion"),
+                            Precio = reader.GetDecimal("Precio"),
+
+                        });
+                    }
                 }
             }
         }
+        return lista;
     }
-    return lista;
-}
+
 }

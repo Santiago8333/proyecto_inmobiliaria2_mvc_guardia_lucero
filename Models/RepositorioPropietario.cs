@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using MySql.Data.MySqlClient;
 
 
@@ -68,13 +69,13 @@ namespace proyecto_inmobiliaria2_mvc_guardia_lucero.Models
                 }
             }
         }
-
-        public List<Propietarios> ObtenerPaginados(int pagina, int tamanoPagina)
+/*
+        public List<Propietarios> ObtenerPaginados(string email,int pagina, int tamanoPagina)
         {
             List<Propietarios> propietarios = new List<Propietarios>();
             using (MySqlConnection connection = new MySqlConnection(ConectionString))
             {
-                var query = @"SELECT Id_propietario, Dni, Apellido, Nombre, Email, Telefono, Fecha_creacion,Creado_por
+                var query = @"SELECT Id_propietario, Dni, Apellido, Nombre, Email, Telefono, Fecha_creacion,Creado_por,Estado
                       FROM propietarios
                       ORDER BY Id_propietario
                       LIMIT @limit OFFSET @offset";
@@ -97,15 +98,72 @@ namespace proyecto_inmobiliaria2_mvc_guardia_lucero.Models
                             Email = reader.GetString(nameof(Propietarios.Email)),
                             Telefono = reader.GetString(nameof(Propietarios.Telefono)),
                             Fecha_creacion = reader.GetDateTime(nameof(Propietarios.Fecha_creacion)),
-                            Creado_por = reader.IsDBNull(reader.GetOrdinal(nameof(Propietarios.Creado_por))) 
-                            ? null 
+                            Creado_por = reader.IsDBNull(reader.GetOrdinal(nameof(Propietarios.Creado_por)))
+                            ? null
                             : reader.GetString(nameof(Propietarios.Creado_por)),
+                            Estado = reader.GetBoolean(nameof(Propietarios.Estado))
                         });
                     }
                 }
             }
             return propietarios;
         }
+        */
+public List<Propietarios> ObtenerPaginados(string? email, int pagina, int tamanoPagina)
+{
+    List<Propietarios> propietarios = new List<Propietarios>();
+    using (MySqlConnection connection = new MySqlConnection(ConectionString))
+    {
+    
+        var sqlBuilder = new System.Text.StringBuilder(@"
+            SELECT Id_propietario, Dni, Apellido, Nombre, Email, Telefono, 
+                   Fecha_creacion, Creado_por, Estado
+            FROM propietarios");
+
+        using (MySqlCommand command = new MySqlCommand())
+        {
+            
+            if (!string.IsNullOrEmpty(email))
+            {
+                
+                sqlBuilder.Append(" WHERE Email LIKE @email");
+                command.Parameters.AddWithValue("@email", $"%{email}%"); 
+            }
+
+            
+            sqlBuilder.Append(" ORDER BY Id_propietario LIMIT @limit OFFSET @offset");
+            command.Parameters.AddWithValue("@limit", tamanoPagina);
+            command.Parameters.AddWithValue("@offset", (pagina - 1) * tamanoPagina);
+            
+            command.CommandText = sqlBuilder.ToString();
+            command.Connection = connection;
+
+            connection.Open();
+            using (var reader = command.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    propietarios.Add(new Propietarios
+                    {
+                        Id_propietario = reader.GetInt32(nameof(Propietarios.Id_propietario)),
+                        Dni = reader.GetString(nameof(Propietarios.Dni)),
+                        Apellido = reader.GetString(nameof(Propietarios.Apellido)),
+                        Nombre = reader.GetString(nameof(Propietarios.Nombre)),
+                        Email = reader.GetString(nameof(Propietarios.Email)),
+                        Telefono = reader.GetString(nameof(Propietarios.Telefono)),
+                        Fecha_creacion = reader.GetDateTime(nameof(Propietarios.Fecha_creacion)),
+                        Creado_por = reader.IsDBNull(reader.GetOrdinal(nameof(Propietarios.Creado_por)))
+                        ? null
+                        : reader.GetString(nameof(Propietarios.Creado_por)),
+                        Estado = reader.GetBoolean(nameof(Propietarios.Estado))
+                    });
+                }
+            }
+        }
+    }
+    return propietarios;
+}
+/*
         public int ContarPropietarios()
         {
             using (var connection = new MySqlConnection(ConectionString))
@@ -118,6 +176,27 @@ namespace proyecto_inmobiliaria2_mvc_guardia_lucero.Models
                 }
             }
         }
+        */
+public int ContarFiltrados(string? email)
+{
+    using (var connection = new MySqlConnection(ConectionString))
+    {
+        var sqlBuilder = new System.Text.StringBuilder("SELECT COUNT(*) FROM propietarios");
+        using (var command = new MySqlCommand())
+        {
+            if (!string.IsNullOrEmpty(email))
+            {
+                sqlBuilder.Append(" WHERE Email LIKE @email");
+                command.Parameters.AddWithValue("@email", $"%{email}%");
+            }
+
+            command.CommandText = sqlBuilder.ToString();
+            command.Connection = connection;
+            connection.Open();
+            return Convert.ToInt32(command.ExecuteScalar());
+        }
+    }
+}
         public Propietarios? ObtenerPorID(int id)
         {
             Propietarios? res = null;
@@ -247,7 +326,7 @@ namespace proyecto_inmobiliaria2_mvc_guardia_lucero.Models
 
                 using (MySqlCommand command = new MySqlCommand(query, connection))
                 {
-                    
+
                     command.Parameters.AddWithValue("@Email", $"%{emailParcial}%");
 
                     connection.Open();
@@ -271,6 +350,38 @@ namespace proyecto_inmobiliaria2_mvc_guardia_lucero.Models
 
             return lista;
         }
-    }
 
+        public void DesactivarPropietario(Propietarios actualizarPropietario)
+        {
+            using (MySqlConnection connection = new MySqlConnection(ConectionString))
+            {
+                var query = @"UPDATE propietarios
+                      SET Estado = 0
+                      WHERE Id_propietario = @Id";
+
+                using (MySqlCommand command = new MySqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@Id", actualizarPropietario.Id_propietario);
+                    connection.Open();
+                    command.ExecuteNonQuery();
+                }
+            }
+        }
+        public void ActivarPropietario(Propietarios actualizarPropietario)
+        {
+            using (MySqlConnection connection = new MySqlConnection(ConectionString))
+            {
+                var query = @"UPDATE propietarios
+                      SET Estado = 1
+                      WHERE Id_propietario = @Id";
+
+                using (MySqlCommand command = new MySqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@Id", actualizarPropietario.Id_propietario);
+                    connection.Open();
+                    command.ExecuteNonQuery();
+                }
+            }
+        }
+    }
 }

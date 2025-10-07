@@ -16,11 +16,12 @@ public class PropietarioController : Controller
         this.repo = repositorio;
         this.config = config;
     }
-    public IActionResult Index(int pagina = 1, int tamanoPagina = 5)
+    public IActionResult Index(string? email,int pagina = 1, int tamanoPagina = 5)
     {
-        var listaPropietarios = repo.ObtenerPaginados(pagina, tamanoPagina);
+         ViewBag.EmailFilter = email;
+        var listaPropietarios = repo.ObtenerPaginados(email,pagina, tamanoPagina);
 
-        int totalRegistros = repo.ContarPropietarios();
+        int totalRegistros = repo.ContarFiltrados(email);
         ViewBag.PaginaActual = pagina;
         ViewBag.TotalPaginas = (int)Math.Ceiling((double)totalRegistros / tamanoPagina);
         ViewBag.Registros = totalRegistros > 0;
@@ -46,7 +47,7 @@ public class PropietarioController : Controller
             else
             {
                 TempData["Mensaje"] = "Propietario agregado exitosamente.";
-                propietario.Creado_por = User.Identity?.Name ?? "Sistema"; 
+                propietario.Creado_por = User.Identity?.Name ?? "Sistema";
                 repo.AgregarPropietario(propietario);
                 return RedirectToAction("Index");
             }
@@ -105,5 +106,47 @@ public class PropietarioController : Controller
     {
         var resultados = repo.BuscarPorEmail(term ?? "");
         return Json(resultados);
+    }
+        public IActionResult Desactivar(int id)
+    {
+        if (id == 0)
+        {
+            TempData["Mensaje"] = "Propietario no encontrado.";
+            return RedirectToAction("Index");
+        }
+        else
+        {
+
+            var propietario = repo.ObtenerPorID(id);
+            if (propietario == null)
+            {
+                TempData["Mensaje"] = "Propietario no encontrado.";
+                return RedirectToAction("Index");
+            }
+            repo.DesactivarPropietario(propietario);
+            TempData["Mensaje"] = "Propietario desactivado.";
+            return RedirectToAction("Index");
+        }
+    }
+    public IActionResult Activar(int id)
+    {
+        if (id == 0)
+        {
+            TempData["Mensaje"] = "Propietario no encontrado.";
+            return RedirectToAction("Index");
+        }
+        else
+        {
+
+            var propietario = repo.ObtenerPorID(id);
+            if (propietario == null)
+            {
+                TempData["Mensaje"] = "Propietario no encontrado.";
+                return RedirectToAction("Index");
+            }
+            repo.ActivarPropietario(propietario);
+            TempData["Mensaje"] = "Propietario activar.";
+            return RedirectToAction("Index");
+        }
     }
 }

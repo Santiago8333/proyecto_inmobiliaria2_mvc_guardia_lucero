@@ -2,6 +2,7 @@ using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using proyecto_inmobiliaria2_mvc_guardia_lucero.Models;
 using Microsoft.AspNetCore.Authorization;
+using Org.BouncyCastle.Asn1.Eac;
 namespace proyecto_inmobiliaria2_mvc_guardia_lucero.Controllers;
 [Authorize]
 public class InquilinoController : Controller
@@ -14,11 +15,12 @@ public class InquilinoController : Controller
         repo = new RepositorioInquilino();
 
     }
-    public IActionResult Index(int pagina = 1, int tamanoPagina = 5)
+    public IActionResult Index(string? email, int pagina = 1, int tamanoPagina = 5)
     {
-        var listaInquilinos = repo.ObtenerPaginados(pagina, tamanoPagina);
+        ViewBag.EmailFilter = email;
+        var listaInquilinos = repo.ObtenerPaginados(email,pagina, tamanoPagina);
 
-        int totalRegistros = repo.ContarInquilinos();
+        int totalRegistros = repo.ContarFiltrados(email);
         ViewBag.PaginaActual = pagina;
         ViewBag.TotalPaginas = (int)Math.Ceiling((double)totalRegistros / tamanoPagina);
         ViewBag.Registros = totalRegistros > 0;
@@ -102,6 +104,47 @@ public IActionResult Buscar(string term)
     return Json(resultados);
 }
 
+        public IActionResult Desactivar(int id)
+    {
+        if (id == 0)
+        {
+            TempData["Mensaje"] = "Inquilino no encontrado.";
+            return RedirectToAction("Index");
+        }
+        else
+        {
 
+            var inquilino = repo.ObtenerPorID(id);
+            if (inquilino == null)
+            {
+                TempData["Mensaje"] = "Inquilino no encontrado.";
+                return RedirectToAction("Index");
+            }
+            repo.DesactivarInquilino(inquilino);
+            TempData["Mensaje"] = "Inquilino desactivado.";
+            return RedirectToAction("Index");
+        }
+    }
+    public IActionResult Activar(int id)
+    {
+        if (id == 0)
+        {
+            TempData["Mensaje"] = "inquilino no encontrado.";
+            return RedirectToAction("Index");
+        }
+        else
+        {
+
+            var inquilino = repo.ObtenerPorID(id);
+            if (inquilino == null)
+            {
+                TempData["Mensaje"] = "inquilino no encontrado.";
+                return RedirectToAction("Index");
+            }
+            repo.ActivarInquilino(inquilino);
+            TempData["Mensaje"] = "inquilino activar.";
+            return RedirectToAction("Index");
+        }
+    }
 
 }

@@ -14,5 +14,5 @@ public class Inquilinos
     public string Telefono {get;set;} = "";
     public string? Creado_por { get; set; } = "";
     public DateTime Fecha_creacion { get; set; }
-
+    public Boolean Estado { get; set; } 
 }
