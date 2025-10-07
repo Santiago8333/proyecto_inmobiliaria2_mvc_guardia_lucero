@@ -74,7 +74,7 @@ public class RepositorioInmueble : RepositorioBase
         }
         return inmuebles;
     }
-    public List<Inmuebles> ObtenerPaginadosFiltrados(string? email, bool? estado, int pagina, int tamanoPagina)
+    public List<Inmuebles> ObtenerPaginadosFiltrados(string? email, bool? estado,DateTime? fechaInicio,DateTime? fechaFin,int pagina, int tamanoPagina)
 {
     List<Inmuebles> inmuebles = new List<Inmuebles>();
     using (MySqlConnection connection = new MySqlConnection(ConectionString))
@@ -106,7 +106,19 @@ public class RepositorioInmueble : RepositorioBase
                 command.Parameters.AddWithValue("@estado", estado.Value);
             }
 
-            
+            // Filtro por Disponibilidad de Fechas
+            if (fechaInicio.HasValue && fechaFin.HasValue)
+            {
+                whereClauses.Add(@"i.Id_inmueble NOT IN (
+                    SELECT DISTINCT c.Id_inmueble 
+                    FROM contratos c
+                    WHERE c.Estado = 1 
+                      AND (c.Fecha_desde <= @fechaFin) 
+                      AND (c.Fecha_hasta >= @fechaInicio)
+                )");
+                command.Parameters.AddWithValue("@fechaInicio", fechaInicio.Value);
+                command.Parameters.AddWithValue("@fechaFin", fechaFin.Value);
+            }
             if (whereClauses.Any())
             {
                 sqlBuilder.Append(" WHERE ").Append(string.Join(" AND ", whereClauses));
@@ -167,44 +179,51 @@ public class RepositorioInmueble : RepositorioBase
             }
         }
     }
-        public int ContarFiltrados(string? email, bool? estado)
+public int ContarFiltrados(string? email, bool? estado, DateTime? fechaInicio, DateTime? fechaFin)
+{
+    using (var connection = new MySqlConnection(ConectionString))
     {
-        using (var connection = new MySqlConnection(ConectionString))
+        var sqlBuilder = new System.Text.StringBuilder(@"
+            SELECT COUNT(*)
+            FROM inmuebles i
+            JOIN propietarios p ON i.Id_propietario = p.Id_propietario");
+
+        var whereClauses = new List<string>();
+        using (var command = new MySqlCommand())
         {
-            var sql = new System.Text.StringBuilder(@"
-                SELECT COUNT(*)
-                FROM inmuebles i
-                JOIN propietarios p ON i.Id_propietario = p.Id_propietario");
-
-            var whereClauses = new List<string>();
-            var parameters = new MySql.Data.MySqlClient.MySqlCommand();
-
-            // LA MISMA LÓGICA DE FILTROS QUE EL MÉTODO ANTERIOR
+            // --- LA MISMA LÓGICA DE FILTROS QUE EL MÉTODO ANTERIOR ---
             if (!string.IsNullOrEmpty(email))
             {
                 whereClauses.Add("p.Email LIKE @email");
-                parameters.Parameters.AddWithValue("@email", $"%{email}%");
+                command.Parameters.AddWithValue("@email", $"%{email}%");
             }
-
             if (estado.HasValue)
             {
                 whereClauses.Add("i.Estado = @estado");
-                parameters.Parameters.AddWithValue("@estado", estado.Value);
+                command.Parameters.AddWithValue("@estado", estado.Value);
+            }
+            if (fechaInicio.HasValue && fechaFin.HasValue)
+            {
+                whereClauses.Add(@"i.Id_inmueble NOT IN (
+                    SELECT DISTINCT c.Id_inmueble FROM contratos c
+                    WHERE c.Estado = 1 AND (c.Fecha_desde <= @fechaFin) AND (c.Fecha_hasta >= @fechaInicio)
+                )");
+                command.Parameters.AddWithValue("@fechaInicio", fechaInicio.Value);
+                command.Parameters.AddWithValue("@fechaFin", fechaFin.Value);
             }
 
             if (whereClauses.Any())
             {
-                sql.Append(" WHERE ").Append(string.Join(" AND ", whereClauses));
+                sqlBuilder.Append(" WHERE ").Append(string.Join(" AND ", whereClauses));
             }
-            
-            parameters.Connection = connection;
-            parameters.CommandText = sql.ToString();
 
+            command.CommandText = sqlBuilder.ToString();
+            command.Connection = connection;
             connection.Open();
-            // ExecuteScalar se usa para obtener un único valor (como un conteo)
-            return Convert.ToInt32(parameters.ExecuteScalar());
+            return Convert.ToInt32(command.ExecuteScalar());
         }
     }
+}
 
     public List<Propietarios> ObtenerTodosPropietarios()
     {
@@ -436,20 +455,60 @@ public class RepositorioInmueble : RepositorioBase
     }
 }
     public void ActivarInmueble(int idInmueble)
-{
-    using (MySqlConnection connection = new MySqlConnection(ConectionString))
     {
-        var query = @"UPDATE inmuebles
+        using (MySqlConnection connection = new MySqlConnection(ConectionString))
+        {
+            var query = @"UPDATE inmuebles
                       SET Estado = 1,Desactivado_por = @Desactivado_por
                       WHERE Id_inmueble = @Id";
 
-        using (MySqlCommand command = new MySqlCommand(query, connection))
-        {
-            command.Parameters.AddWithValue("@Id", idInmueble);
-            command.Parameters.AddWithValue("@Desactivado_por", "");
-            connection.Open();
-            command.ExecuteNonQuery();
+            using (MySqlCommand command = new MySqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@Id", idInmueble);
+                command.Parameters.AddWithValue("@Desactivado_por", "");
+                connection.Open();
+                command.ExecuteNonQuery();
+            }
         }
     }
+public List<Inmuebles> ObtenerInmueblesDisponibles(DateTime fechaInicio, DateTime fechaFin)
+{
+    var lista = new List<Inmuebles>();
+    using (var connection = new MySqlConnection(ConectionString))
+    {
+       
+        var query = @"
+            SELECT * FROM inmuebles
+            WHERE Activo = 1 AND Id_inmueble NOT IN (
+                -- ... que no estén en esta subconsulta de inmuebles ocupados.
+                SELECT DISTINCT Id_inmueble 
+                FROM contratos
+                WHERE Estado = 1 
+                  AND (Fecha_desde <= @fechaFin) 
+                  AND (Fecha_hasta >= @fechaInicio)
+            )";
+
+        using (var command = new MySqlCommand(query, connection))
+        {
+            command.Parameters.AddWithValue("@fechaInicio", fechaInicio);
+            command.Parameters.AddWithValue("@fechaFin", fechaFin);
+            connection.Open();
+            using (var reader = command.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    
+                    lista.Add(new Inmuebles
+                    {
+                        Id_inmueble = reader.GetInt32("Id_inmueble"),
+                        Direccion = reader.GetString("Direccion"),
+                        Precio = reader.GetDecimal("Precio"),
+                       
+                    });
+                }
+            }
+        }
+    }
+    return lista;
 }
 }

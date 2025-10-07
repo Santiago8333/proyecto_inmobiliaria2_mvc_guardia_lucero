@@ -14,14 +14,16 @@ public class InmuebleController : Controller
         this.repo = repositorio;
         this.config = config;
     }
-    public IActionResult Index(string? email, bool? estado,int pagina = 1, int tamanoPagina = 5)
+    public IActionResult Index(string? email, bool? estado,DateTime? fechaInicio, DateTime? fechaFin,int pagina = 1, int tamanoPagina = 5)
     {
+        ViewBag.FechaInicioFilter = fechaInicio;
+        ViewBag.FechaFinFilter = fechaFin;
         ViewBag.EmailFilter = email;
         ViewBag.EstadoFilter = estado;
         //var listaInmuebles = repo.ObtenerPaginados(pagina, tamanoPagina);
-        var listaInmuebles = repo.ObtenerPaginadosFiltrados(email, estado, pagina, tamanoPagina);
+        var listaInmuebles = repo.ObtenerPaginadosFiltrados(email, estado,fechaInicio,fechaFin, pagina, tamanoPagina);
         //int totalRegistros = repo.ContarInmuebles();
-        var totalRegistros = repo.ContarFiltrados(email, estado);
+        var totalRegistros = repo.ContarFiltrados(email, estado,fechaInicio,fechaFin);
         ViewBag.PaginaActual = pagina;
         ViewBag.TotalPaginas = (int)Math.Ceiling((double)totalRegistros / tamanoPagina);
         ViewBag.Registros = totalRegistros > 0;

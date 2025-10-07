@@ -7,11 +7,11 @@
 <div class="col-md-12 history bg-light border-right">
 <h1>Inmuebles</h1>
 <form asp-action="Index" method="get" class="row g-3 mb-4">
-    <div class="col-md-5">
+    <div class="col-md-2">
         <label for="email" class="form-label">Email del Propietario</label>
         <input type="text" name="email" id="email" class="form-control" value="@ViewBag.EmailFilter" placeholder="ejemplo@dominio.com">
     </div>
-    <div class="col-md-4">
+    <div class="col-md-2">
         <label for="estado" class="form-label">Estado</label>
         <select name="estado" id="estado" class="form-select">
             <option value="">Todos</option>
@@ -19,7 +19,15 @@
             <option value="false" selected="@(ViewBag.EstadoFilter == false)">Inactivos</option>
         </select>
     </div>
-    <div class="col-md-3 d-flex align-items-end">
+    <div class="col-md-2">
+        <label for="fechaInicio" class="form-label">Desde</label>
+        <input type="date" name="fechaInicio" id="fechaInicio" class="form-control" value="@(ViewBag.FechaInicioFilter?.ToString("yyyy-MM-dd"))">
+    </div>
+    <div class="col-md-2">
+        <label for="fechaFin" class="form-label">Hasta</label>
+        <input type="date" name="fechaFin" id="fechaFin" class="form-control" value="@(ViewBag.FechaFinFilter?.ToString("yyyy-MM-dd"))">
+    </div>
+    <div class="col-md-2 d-flex align-items-end">
         <button type="submit" class="btn btn-primary me-2">Filtrar</button>
         <a asp-action="Index" class="btn btn-secondary">Limpiar</a>
     </div>
