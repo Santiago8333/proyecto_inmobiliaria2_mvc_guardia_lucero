@@ -1,0 +1,3 @@
+Usuarios:
+Rango:Admin Email:admin@admin contraseña:123
+Rango:Empleado Email:jose@jose contraseña:123
