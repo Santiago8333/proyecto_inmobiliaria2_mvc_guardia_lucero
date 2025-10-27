@@ -59,22 +59,36 @@ public IActionResult Agregar(Inmuebles inmueble)
     }
 
     TempData["Mensaje"] = "Error al agregar el inmueble.";
-    return View(inmueble);
+    return RedirectToAction("Index");
 }
     [Authorize(Policy = "Administrador")]
-    public IActionResult Eliminar(int id)
+public IActionResult Eliminar(int id)
+{
+    var inmueble = repo.ObtenerPorID(id);
+    if (inmueble == null)
     {
-        var inmueble = repo.ObtenerPorID(id);
-        if (inmueble == null)
-        {
-            TempData["Mensaje"] = "Inmueble no encontrado.";
-            return RedirectToAction("Index");
-        }
-        repo.EliminarInmueble(id);
-        TempData["Mensaje"] = "Inmueble eliminado.";
+        TempData["Mensaje"] = "Inmueble no encontrado.";
         return RedirectToAction("Index");
-
     }
+
+    if (!string.IsNullOrEmpty(inmueble.Portada))
+    {
+     
+        var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/inmuebles");
+        var filePath = Path.Combine(uploadsFolder, inmueble.Portada);
+
+
+        if (System.IO.File.Exists(filePath))
+        {
+            System.IO.File.Delete(filePath);
+        }
+    }
+
+    repo.EliminarInmueble(id);
+    
+    TempData["Mensaje"] = "Inmueble eliminado exitosamente.";
+    return RedirectToAction("Index");
+}
     public IActionResult Edicion(int id)
     {
         if (id == 0)

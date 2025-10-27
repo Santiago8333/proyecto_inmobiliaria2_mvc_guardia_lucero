@@ -44,6 +44,7 @@ public class UsuarioController : Controller
     {
         Console.WriteLine("Login: " + loginusuario.Email);
         Console.WriteLine("Login: " + loginusuario.Clave);
+        
         if (!ModelState.IsValid)
         {
             Console.WriteLine("El modelo no es válido");

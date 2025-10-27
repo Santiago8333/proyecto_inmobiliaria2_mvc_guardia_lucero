@@ -53,7 +53,7 @@ public class PropietarioController : Controller
             }
         }
         TempData["Mensaje"] = "Error al agregar.";
-        return View(propietario);
+        return RedirectToAction("Index");
     }
 
     public IActionResult Edicion(int id)

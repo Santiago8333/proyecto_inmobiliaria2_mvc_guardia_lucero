@@ -47,7 +47,7 @@ public class InquilinoController : Controller
             }
         }
         TempData["Mensaje"] = "Error al agregar.";
-        return View(inquilino);
+        return RedirectToAction("Index");
     }
  [Authorize(Policy = "Administrador")]
 public IActionResult Eliminar(int id)
